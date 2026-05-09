@@ -186,6 +186,15 @@ local function unitDef_Post(name, uDef)
 		uDef.minCollisionSpeed = 75 / Game.gameSpeed -- define the minimum velocity(speed) required for all units to suffer fall/collision damage.
 	end
 
+
+	-- Fly tank hack
+	if uDef.movementclass and string.find(uDef.movementclass, "TANK") then
+		uDef.canfly = true
+		uDef.cruisealt = 150
+		uDef.hoverattack = true
+		uDef.upright = true
+		uDef.movementclass = nil
+	end
 	-- Event Model Replacements: -----------------------------------------------------------------------------
 
 	if isAprilFools and holidayModels.AprilFools[basename] then
