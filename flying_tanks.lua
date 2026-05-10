@@ -18,15 +18,44 @@ local planes = {
 }
 
 for n, d in pairs(UnitDefs) do
+    local isModified = false
+
     if tanks[n] and not d.canfly then
-        -- Xe tăng hóa máy bay
         d.canfly, d.cruisealtitude, d.hoverattack, d.upright, d.movementclass = true, 150, true, true, nil
         d.turnrate = (d.turnrate or 500) * 1.5
         d.acceleration = (d.acceleration or 0.1) * 2
+        isModified = true
     elseif planes[n] and d.canfly then
-        -- Máy bay hóa xe tăng
         d.canfly, d.cruisealtitude, d.hoverattack, d.movementclass = false, nil, false, "TANK3"
         d.collide, d.maxslope, d.maxwaterdepth, d.upright = true, 15, 15, true
         d.turnrate, d.turninplace, d.turninplaceanglelimit = 350, true, 90
+        isModified = true
+    end
+
+    -- Nếu unit này là một phần của mod (từ máy bay xuống hoặc từ tăng lên), nâng cấp vũ khí cho chúng.
+    if isModified then
+        -- 1. Cho phép nhắm máy bay (Xóa bỏ lệnh cấm bắn máy bay)
+        if d.weapons then
+            for _, weapon in pairs(d.weapons) do
+                if weapon.badtargetcategory == "VTOL" or weapon.badtargetcategory == "NOTAIR" then
+                    weapon.badtargetcategory = nil
+                end
+            end
+        end
+
+        -- 2. Đẩy nhanh tốc độ đạn để bắn rụng máy bay mà KHÔNG cần đạn dẫn đường (tracks)
+        if d.weapondefs then
+            for _, wDef in pairs(d.weapondefs) do
+                -- Tăng tốc độ bay của đạn gấp 4 lần để dễ trúng mục tiêu bay nhanh
+                if wDef.weaponvelocity then
+                    wDef.weaponvelocity = wDef.weaponvelocity * 4
+                end
+
+                -- Đồng bộ sát thương (khiến đạn bắn máy bay đau như bắn xe tăng)
+                if wDef.damage and wDef.damage.default then
+                    wDef.damage.vtol = wDef.damage.default
+                end
+            end
+        end
     end
 end
