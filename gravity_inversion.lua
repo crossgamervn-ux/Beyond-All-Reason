@@ -1,8 +1,9 @@
 -- by CrossGamer -- Gravity Inversion Mod
 for n, d in pairs(UnitDefs) do
     local isModified = false
+    local isCom = d.customparams and d.customparams.iscommander
 
-    if d.canfly then
+    if d.canfly and d.health and d.health > 0 and not isCom then
         d.canfly = false
         d.cruisealtitude = nil
         d.hoverattack = false
@@ -15,14 +16,16 @@ for n, d in pairs(UnitDefs) do
         d.turninplace = true
         d.turninplaceanglelimit = 90
         isModified = true
-    elseif not d.canfly and (tonumber(d.speed) or 0) > 0 then
+    elseif not d.canfly and d.health and d.health > 0 and (tonumber(d.speed) or 0) > 0 and not isCom then
         d.canfly = true
         d.cruisealtitude = 150
         d.hoverattack = true
         d.upright = true
-        d.movementclass = nil
         d.turnrate = (tonumber(d.turnrate) or 500) * 1.5
         d.acceleration = (tonumber(d.acceleration) or 0.1) * 2
+        d.floater = false
+        d.waterline = 0
+        d.minwaterdepth = 0
         isModified = true
     end
 
