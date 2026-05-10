@@ -19,8 +19,8 @@ for n, d in pairs(UnitDefs) do
 
     if tanks[n] and not d.canfly then
         d.canfly, d.cruisealtitude, d.hoverattack, d.upright, d.movementclass = true, 150, true, true, nil
-        d.turnrate = (d.turnrate or 500) * 1.5
-        d.acceleration = (d.acceleration or 0.1) * 2
+        d.turnrate = (tonumber(d.turnrate) or 500) * 1.5
+        d.acceleration = (tonumber(d.acceleration) or 0.1) * 2
         isModified = true
     elseif planes[n] and d.canfly then
         d.canfly, d.cruisealtitude, d.hoverattack, d.movementclass = false, nil, false, "TANK3"
@@ -45,11 +45,19 @@ for n, d in pairs(UnitDefs) do
         if d.weapondefs then
             for _, wDef in pairs(d.weapondefs) do
                 if wDef.weaponvelocity then
-                    wDef.weaponvelocity = wDef.weaponvelocity * 4
+                    wDef.weaponvelocity = (tonumber(wDef.weaponvelocity) or 100) * 4
                 end
 
                 if wDef.damage and wDef.damage.default then
                     wDef.damage.vtol = wDef.damage.default
+                end
+
+                if wDef.canattackground == false then
+                    wDef.canattackground = true
+                end
+
+                if wDef.waterweapon then
+                    wDef.waterweapon = nil
                 end
             end
         end

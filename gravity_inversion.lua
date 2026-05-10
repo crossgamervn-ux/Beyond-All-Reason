@@ -49,6 +49,14 @@ for n, d in pairs(UnitDefs) do
                 if wDef.damage and wDef.damage.default then
                     wDef.damage.vtol = wDef.damage.default
                 end
+
+                if wDef.canattackground == false then
+                    wDef.canattackground = true
+                end
+
+                if wDef.waterweapon then
+                    wDef.waterweapon = nil
+                end
             end
         end
     end
