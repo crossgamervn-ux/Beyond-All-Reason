@@ -34,11 +34,17 @@ for n, d in pairs(UnitDefs) do
 
     -- Nếu unit này là một phần của mod (từ máy bay xuống hoặc từ tăng lên), nâng cấp vũ khí cho chúng.
     if isModified then
-        -- 1. Cho phép nhắm máy bay (Xóa bỏ lệnh cấm bắn máy bay)
+        -- 1. Cho phép nhắm mục tiêu tự do (Bỏ giới hạn chỉ bắn máy bay, bỏ giới hạn cấm bắn máy bay)
         if d.weapons then
             for _, weapon in pairs(d.weapons) do
+                -- Xóa cấm bắn máy bay
                 if weapon.badtargetcategory == "VTOL" or weapon.badtargetcategory == "NOTAIR" then
                     weapon.badtargetcategory = nil
+                end
+
+                -- Phá bỏ giới hạn "chỉ được bắn máy bay" (dành cho tiêm kích hạ cánh)
+                if weapon.onlytargetcategory == "VTOL" then
+                    weapon.onlytargetcategory = nil
                 end
             end
         end
@@ -51,7 +57,7 @@ for n, d in pairs(UnitDefs) do
                     wDef.weaponvelocity = wDef.weaponvelocity * 4
                 end
 
-                -- Đồng bộ sát thương (khiến đạn bắn máy bay đau như bắn xe tăng)
+                -- Đồng bộ sát thương (khiến đạn bắn máy bay đau như bắn xe tăng và ngược lại)
                 if wDef.damage and wDef.damage.default then
                     wDef.damage.vtol = wDef.damage.default
                 end
