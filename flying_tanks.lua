@@ -1,12 +1,21 @@
--- Flying Vehicles Mod (Hệ xe cơ giới)
+-- Flying Vehicles Mod (Chỉ định theo Unit ID cụ thể)
 local convertedCount = 0
 local failedCount = 0
 
-Spring.Echo(">>>>> FLYING TANK MOD: Bắt đầu quét hệ thống xe cơ giới... <<<<<")
+Spring.Echo(">>>>> FLYING TANK MOD: Bắt đầu quét danh sách xe tăng Arm... <<<<<")
+
+-- Danh sách ID của 5 loại xe tăng thuộc hệ Arm
+local targetUnits = {
+    ["armstump"] = true,  -- Xe tăng Stump (Medium Tank)
+    ["armflash"] = true,  -- Xe tăng Flash (Light Tank)
+    ["armbull"] = true,   -- Xe tăng Bull (Heavy Assault Tank)
+    ["armjanus"] = true,  -- Xe tăng Janus (Twin Rocket Tank)
+    ["armart"] = true     -- Xe tăng Lugaru (Mobile Artillery)
+}
 
 for unitName, unitDef in pairs(UnitDefs) do
-    -- Hệ xe cơ giới trong BAR Engine thường có movementclass chứa chữ "TANK" (như TANK2, TANK3, MTANK3, HTANK4, ATANK3)
-    if unitDef.movementclass and string.find(unitDef.movementclass, "TANK") then
+    -- Kiểm tra xem unitID có nằm trong danh sách targetUnits đã định sẵn không
+    if targetUnits[unitName] then
         -- Lọc ra các unit chưa phải là máy bay
         if not unitDef.canfly then
             unitDef.canfly = true
@@ -20,7 +29,7 @@ for unitName, unitDef in pairs(UnitDefs) do
             unitDef.acceleration = (unitDef.acceleration or 0.1) * 2 -- Tăng gia tốc
 
             convertedCount = convertedCount + 1
-            Spring.Echo("[Flying Mod] Thêm THÀNH CÔNG: Đã độ chế máy bay cho " .. unitName)
+            Spring.Echo("[Flying Mod] Thêm THÀNH CÔNG: Đã độ chế máy bay cho xe tăng: " .. unitName)
         else
             -- Nếu xe này đã có khả năng bay (canfly == true) từ trước
             failedCount = failedCount + 1
@@ -30,5 +39,5 @@ for unitName, unitDef in pairs(UnitDefs) do
 end
 
 Spring.Echo(">>>>> FLYING TANK MOD: Hoàn tất! <<<<<")
-Spring.Echo(">> Chuyển đổi thành công: " .. convertedCount .. " xe.")
+Spring.Echo(">> Chuyển đổi thành công: " .. convertedCount .. " xe tăng Arm.")
 Spring.Echo(">> Chuyển đổi thất bại (đã bay sẵn): " .. failedCount .. " xe.")
