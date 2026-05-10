@@ -15,14 +15,14 @@ for n, d in pairs(UnitDefs) do
         d.turninplace = true
         d.turninplaceanglelimit = 90
         isModified = true
-    elseif not d.canfly and d.speed and d.speed > 0 then
+    elseif not d.canfly and (tonumber(d.speed) or 0) > 0 then
         d.canfly = true
         d.cruisealtitude = 150
         d.hoverattack = true
         d.upright = true
         d.movementclass = nil
-        d.turnrate = (d.turnrate or 500) * 1.5
-        d.acceleration = (d.acceleration or 0.1) * 2
+        d.turnrate = (tonumber(d.turnrate) or 500) * 1.5
+        d.acceleration = (tonumber(d.acceleration) or 0.1) * 2
         isModified = true
     end
 
@@ -41,7 +41,7 @@ for n, d in pairs(UnitDefs) do
         if d.weapondefs then
             for _, wDef in pairs(d.weapondefs) do
                 if wDef.weaponvelocity then
-                    wDef.weaponvelocity = wDef.weaponvelocity * 4
+                    wDef.weaponvelocity = (tonumber(wDef.weaponvelocity) or 100) * 4
                 end
                 if wDef.damage and wDef.damage.default then
                     wDef.damage.vtol = wDef.damage.default
