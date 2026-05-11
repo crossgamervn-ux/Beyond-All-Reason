@@ -41,7 +41,8 @@ for n, d in pairs(UnitDefs) do
             if weapon.badtargetcategory == "VTOL" or weapon.badtargetcategory == "NOTAIR" then
                 weapon.badtargetcategory = nil
             end
-            if weapon.onlytargetcategory == "VTOL" or weapon.onlytargetcategory == "NOTAIR" then
+
+            if weapon.onlytargetcategory == "VTOL" then
                 weapon.onlytargetcategory = nil
             end
         end
@@ -60,6 +61,14 @@ for n, d in pairs(UnitDefs) do
             end
             if wDef.waterweapon then
                 wDef.waterweapon = nil
+            end
+
+            wDef.tolerance = 32000
+            if wDef.flighttime then
+                wDef.flighttime = (tonumber(wDef.flighttime) or 2) * 2
+            end
+            if wDef.turnrate then
+                wDef.turnrate = (tonumber(wDef.turnrate) or 1000) * 2
             end
         end
     end
