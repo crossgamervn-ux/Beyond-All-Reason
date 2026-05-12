@@ -34,6 +34,7 @@ for n, d in pairs(UnitDefs) do
             if weapon.onlytargetcategory == "VTOL" or weapon.onlytargetcategory == "NOTAIR" then
                 weapon.onlytargetcategory = nil
             end
+            weapon.maxangledif = 360
         end
     end
 
@@ -44,15 +45,19 @@ for n, d in pairs(UnitDefs) do
             end
             if wDef.damage and wDef.damage.default then
                 wDef.damage.vtol = wDef.damage.default
+                wDef.damage.subs = wDef.damage.default
             end
             if wDef.canattackground == false then
                 wDef.canattackground = true
             end
-            if wDef.waterweapon then
-                wDef.waterweapon = nil
-            end
-            if wDef.weapontype == "MissileLauncher" or wDef.weapontype == "StarburstLauncher" then
+
+            wDef.waterweapon = true
+
+            if wDef.weapontype ~= "BeamLaser" and wDef.weapontype ~= "LightningCannon" then
                 wDef.tolerance = 32000
+            end
+
+            if wDef.weapontype == "MissileLauncher" or wDef.weapontype == "StarburstLauncher" then
                 if wDef.flighttime then
                     wDef.flighttime = (tonumber(wDef.flighttime) or 2) * 2
                 end
