@@ -2,7 +2,7 @@
 for n, d in pairs(UnitDefs) do
     local isCom = d.customparams and d.customparams.iscommander
 
-    if d.canfly and (d.health or d.maxdamage) and (d.health or d.maxdamage) > 0 and not isCom then
+    if d.canfly and d.health and d.health > 0 and not isCom then
         d.canfly = false
         d.cruisealtitude = nil
         d.hoverattack = false
@@ -14,7 +14,7 @@ for n, d in pairs(UnitDefs) do
         d.turnrate = 350
         d.turninplace = true
         d.turninplaceanglelimit = 90
-    elseif not d.canfly and (d.health or d.maxdamage) and (d.health or d.maxdamage) > 0 and (tonumber(d.speed) or 0) > 0 and not isCom then
+    elseif not d.canfly and d.health and d.health > 0 and (tonumber(d.speed) or 0) > 0 and not isCom then
         d.canfly = true
         d.cruisealtitude = 150
         d.hoverattack = true
@@ -51,13 +51,14 @@ for n, d in pairs(UnitDefs) do
             if wDef.waterweapon then
                 wDef.waterweapon = nil
             end
-
-            wDef.tolerance = 32000
-            if wDef.flighttime then
-                wDef.flighttime = (tonumber(wDef.flighttime) or 2) * 2
-            end
-            if wDef.turnrate then
-                wDef.turnrate = (tonumber(wDef.turnrate) or 1000) * 2
+            if wDef.weapontype == "MissileLauncher" or wDef.weapontype == "StarburstLauncher" then
+                wDef.tolerance = 32000
+                if wDef.flighttime then
+                    wDef.flighttime = (tonumber(wDef.flighttime) or 2) * 2
+                end
+                if wDef.turnrate then
+                    wDef.turnrate = (tonumber(wDef.turnrate) or 1000) * 2
+                end
             end
         end
     end
