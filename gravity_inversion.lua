@@ -1,4 +1,3 @@
--- by CrossGamer -- Gravity Inversion Mod
 for n, d in pairs(UnitDefs) do
     local isCom = d.customparams and d.customparams.iscommander
 
@@ -50,14 +49,12 @@ for n, d in pairs(UnitDefs) do
             if wDef.canattackground == false then
                 wDef.canattackground = true
             end
-
-            wDef.waterweapon = true
-
-            if wDef.weapontype ~= "BeamLaser" and wDef.weapontype ~= "LightningCannon" then
-                wDef.tolerance = 32000
+            if wDef.waterweapon then
+                wDef.waterweapon = nil
             end
 
             if wDef.weapontype == "MissileLauncher" or wDef.weapontype == "StarburstLauncher" then
+                wDef.tolerance = 32000
                 if wDef.flighttime then
                     wDef.flighttime = (tonumber(wDef.flighttime) or 2) * 2
                 end
