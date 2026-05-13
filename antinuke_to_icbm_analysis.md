@@ -48,6 +48,18 @@ for unitName, unitDef in pairs(UnitDefs) do
                 -- 4. Thay đổi âm thanh
                 wDef.soundstart = "nukelaunch"
                 wDef.soundhit = "nukecor"
+
+                -- 5. Thay đổi tốc độ bay và điều khiển cho giống ICBM
+                -- ICBM bay chậm lúc đầu và tăng tốc từ từ, không "vút" đi ngay như Antinuke
+                wDef.weaponvelocity = 1600         -- Tốc độ tối đa
+                wDef.weaponacceleration = 100      -- Gia tốc bay
+                wDef.turnrate = 5500               -- Tốc độ xoay (để quỹ đạo bay giống nuke hơn)
+
+                -- 6. Điều chỉnh giá tiền tạo đạn (Cost) và thời gian nạp đạn (Stockpile)
+                -- Mặc định Antinuke chỉ tốn khoảng 150 Metal, ICBM tốn 1500 Metal
+                wDef.metalpershot = 1500           -- Kim loại để chế tạo 1 quả
+                wDef.energypershot = 187500        -- Năng lượng để chế tạo 1 quả
+                wDef.stockpiletime = 180           -- Thời gian (giây) để build xong 1 quả
             end
         end
     end
@@ -55,4 +67,4 @@ end
 ```
 
 ## Kết luận
-Bạn **hoàn toàn có thể làm được** điều này dễ dàng qua Lua Mutator mà không làm ảnh hưởng đến logic của game (nó vẫn sẽ là đạn đánh chặn, sát thương đánh chặn giữ nguyên, tầm bay giữ nguyên, nhưng hình thức bề ngoài khi bay và khi nổ là của một quả ICBM).
+Bạn **hoàn toàn có thể làm được** điều này dễ dàng qua Lua Mutator mà không làm ảnh hưởng đến chức năng cốt lõi (nó vẫn sẽ thực hiện nhiệm vụ đánh chặn ICBM đối phương). Bạn có thể tự do điều chỉnh cả tốc độ bay và giá thành tạo đạn. File script này đã được mình viết sẵn trong file `antinuke_to_icbm.lua` ở trong hệ thống của bạn!

@@ -1,0 +1,26 @@
+-- by CrossGamer -- Antinuke to ICBM Visuals & Stats
+for n, d in pairs(UnitDefs) do
+    if d.weapondefs then
+        for _, wDef in pairs(d.weapondefs) do
+            if wDef.interceptor == 1 and wDef.weapontype == "StarburstLauncher" then
+                wDef.model = "crblmssl.s3o"
+                wDef.cegtag = "NUKETRAIL"
+                wDef.texture1 = "null"
+                wDef.texture2 = "railguntrail"
+                wDef.texture3 = "null"
+                wDef.smokesize = 35
+                wDef.smoketime = 130
+                wDef.explosiongenerator = "custom:newnukecor"
+                wDef.soundstart = "nukelaunch"
+                wDef.soundhit = "nukecor"
+
+                wDef.weaponvelocity = 1600
+                wDef.weaponacceleration = 100
+                wDef.turnrate = 5500
+                wDef.metalpershot = 1500
+                wDef.energypershot = 187500
+                wDef.stockpiletime = 180
+            end
+        end
+    end
+end
