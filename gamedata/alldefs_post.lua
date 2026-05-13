@@ -1186,6 +1186,38 @@ local function modOptions_Post (UnitDefs, WeaponDefs)
 	for _, wDef in pairs(WeaponDefs) do
 		wDef.explosionScar = false
 	end
+
+	-- MIRV Modification for Nuclear Missiles
+	local function makeMIRV(weaponName)
+		if WeaponDefs[weaponName] then
+			local childNuke = table.copy(WeaponDefs[weaponName])
+			local childName = weaponName .. "_mirv_child"
+			childNuke.name = childNuke.name and (childNuke.name .. " (MIRV Child)") or "MIRV Child"
+
+			-- Ensure child does not have speceffect to prevent infinite loop
+			if childNuke.customparams then
+				childNuke.customparams.speceffect = nil
+			end
+
+			-- Divide damage by 6
+			if childNuke.damage then
+				for k, v in pairs(childNuke.damage) do
+					childNuke.damage[k] = math.floor(v / 6)
+				end
+			end
+
+			WeaponDefs[childName] = childNuke
+
+			local motherNuke = WeaponDefs[weaponName]
+			motherNuke.customparams = motherNuke.customparams or {}
+			motherNuke.customparams.speceffect = "split"
+			motherNuke.customparams.speceffect_def = childName
+			motherNuke.customparams.number = "6"
+		end
+	end
+
+	makeMIRV("crblmssl")
+	makeMIRV("nuclear_missile")
 end
 
 --------------------------
