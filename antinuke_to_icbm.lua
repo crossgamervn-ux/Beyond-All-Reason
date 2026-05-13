@@ -20,6 +20,15 @@ for n, d in pairs(UnitDefs) do
                 wDef.metalpershot = 1500
                 wDef.energypershot = 187500
                 wDef.stockpiletime = 180
+
+                wDef.areaofeffect = 1000
+                wDef.edgeeffectiveness = 0.3
+
+                if not wDef.damage then
+                    wDef.damage = {}
+                end
+                wDef.damage.default = 5500
+                wDef.damage.commanders = 1200
             end
         end
     end

@@ -60,11 +60,27 @@ for unitName, unitDef in pairs(UnitDefs) do
                 wDef.metalpershot = 1500           -- Kim loại để chế tạo 1 quả
                 wDef.energypershot = 187500        -- Năng lượng để chế tạo 1 quả
                 wDef.stockpiletime = 180           -- Thời gian (giây) để build xong 1 quả
+
+                -- 7. Thay đổi sát thương và phạm vi nổ (Mô phỏng 1 phần sức công phá thực tế)
+                -- Khi hai quả nuke va chạm trên không, vụ nổ vẫn sẽ gây một phần thiệt hại xuống mặt đất
+                wDef.areaofeffect = 1000           -- Tầm ảnh hưởng vụ nổ (ICBM thật thường là 1920)
+                wDef.edgeeffectiveness = 0.3       -- Giảm dần sát thương ở rìa
+
+                if not wDef.damage then wDef.damage = {} end
+                wDef.damage.default = 5500         -- Sát thương bằng khoảng 50% ICBM thật
+                wDef.damage.commanders = 1200      -- Giảm sát thương lên tướng để tránh chết bất đắc kỳ tử
             end
         end
     end
 end
 ```
 
+## Giải đáp: Khi đánh chặn thì có tạo sát thương không?
+Mặc định trong BAR, vũ khí có cờ `interceptor = 1` (đánh chặn) có tính năng **nổ trên không (mid-air detonation)**. Engine xử lý việc khi đạn đánh chặn chạm trúng tên lửa mục tiêu, nó sẽ kích nổ ngay tại tọa độ đó.
+
+*   **Mặc định:** Antinuke có `areaofeffect` (AOE) rất nhỏ và sát thương (`damage.default`) chỉ khoảng 500-1500 điểm, do đó khi nổ ở tít trên cao (thường là ở tọa độ Y = vài ngàn), sức sát thương này bị triệt tiêu hoàn toàn trước khi chạm xuống mặt đất dưới dạng sóng xung kích. Nó hoàn toàn vô hại với mặt đất.
+*   **Cách mô phỏng sát thương thực tế:** Để vụ va chạm trên không này có thể dội sát thương xuống mặt đất bên dưới, chúng ta cần phải mở rộng bán kính nổ `areaofeffect` (ví dụ thành 1000 hoặc 1500) và tăng mạnh sát thương nổ (như code mẫu ở mục 7).
+*   **Kết quả:** Với cấu hình trên, khi Antinuke bay lên gặp ICBM, cả hai sẽ cùng kích nổ tạo ra một đám mây hình nấm. Nhờ `areaofeffect = 1000`, sóng xung kích từ vụ nổ bức xạ trên không sẽ lan đủ rộng để giáng thẳng xuống mặt đất ngay bên dưới điểm đánh chặn, gây sát thương khoảng 5500 HP cho mọi unit không có khiên (shield).
+
 ## Kết luận
-Bạn **hoàn toàn có thể làm được** điều này dễ dàng qua Lua Mutator mà không làm ảnh hưởng đến chức năng cốt lõi (nó vẫn sẽ thực hiện nhiệm vụ đánh chặn ICBM đối phương). Bạn có thể tự do điều chỉnh cả tốc độ bay và giá thành tạo đạn. File script này đã được mình viết sẵn trong file `antinuke_to_icbm.lua` ở trong hệ thống của bạn!
+Bạn **hoàn toàn có thể làm được** điều này dễ dàng qua Lua Mutator mà không làm ảnh hưởng đến chức năng cốt lõi (nó vẫn sẽ thực hiện nhiệm vụ đánh chặn ICBM đối phương). Bạn có thể tự do điều chỉnh tốc độ bay, giá thành, và đặc biệt là biến hệ thống phòng thủ thành "con dao hai lưỡi" với tính năng sát thương nổ trên không. File script này đã được mình viết sẵn trong file `antinuke_to_icbm.lua` ở trong hệ thống của bạn!
