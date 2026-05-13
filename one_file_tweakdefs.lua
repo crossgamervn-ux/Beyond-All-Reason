@@ -178,8 +178,6 @@ for n, d in pairs(UnitDefs) do
                 wDef.customparams.cluster_number = 6
 
                 -- HACK: Use proximity and tracking edge-cases in tweakdefs to force early air-burst
-                -- We cannot use flighttime=5 because ICBMs cross large maps.
-                -- By giving the ICBM collision with everything and making it highly sensitive to distance
                 wDef.collidefriendly = false
                 wDef.collidefeature = false
                 wDef.proximitypriority = -1  -- forces projectile to evaluate targets much earlier
