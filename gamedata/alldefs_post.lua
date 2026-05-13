@@ -97,7 +97,9 @@ local function processWeapons(unitDefName, unitDef)
 		table.ensureTable(weaponDef, "customparams")
 
 		if weaponDef.customparams.cluster_def then
-			weaponDef.customparams.cluster_def = unitDefName .. "_" .. weaponDef.customparams.cluster_def
+			if weaponDef.customparams.cluster_def ~= "mirv_nuke_bomblet" then
+				weaponDef.customparams.cluster_def = unitDefName .. "_" .. weaponDef.customparams.cluster_def
+			end
 			weaponDef.customparams.cluster_number = weaponDef.customparams.cluster_number or 5
 		end
 	end
@@ -868,6 +870,11 @@ local function weaponDef_Post(name, wDef)
 		--Air rework
 		if modOptions.air_rework == true then
 			airReworkWeaponTweaks(wDef)
+		end
+
+		if customparams and (customparams.nuclear == 1 or customparams.nuclear == "1") then
+			customparams.cluster_def = "mirv_nuke_bomblet"
+			customparams.cluster_number = 5
 		end
 
 		--[[Skyshift: Air rework
