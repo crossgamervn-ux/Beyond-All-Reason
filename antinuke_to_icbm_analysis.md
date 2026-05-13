@@ -56,10 +56,10 @@ for unitName, unitDef in pairs(UnitDefs) do
                 wDef.turnrate = 5500               -- Tốc độ xoay (để quỹ đạo bay giống nuke hơn)
 
                 -- 6. Điều chỉnh giá tiền tạo đạn (Cost) và thời gian nạp đạn (Stockpile)
-                -- Mặc định Antinuke chỉ tốn khoảng 150 Metal, ICBM tốn 1500 Metal
-                wDef.metalpershot = 1500           -- Kim loại để chế tạo 1 quả
-                wDef.energypershot = 187500        -- Năng lượng để chế tạo 1 quả
-                wDef.stockpiletime = 180           -- Thời gian (giây) để build xong 1 quả
+                -- Mặc định ICBM tốn 1500 Metal, Antinuke rẻ bằng 1/5 ICBM:
+                wDef.metalpershot = 300            -- Kim loại để chế tạo 1 quả
+                wDef.energypershot = 37500         -- Năng lượng để chế tạo 1 quả
+                wDef.stockpiletime = 36            -- Thời gian (giây) để build xong 1 quả
 
                 -- 7. Thay đổi sát thương và phạm vi nổ (Mô phỏng 1 phần sức công phá thực tế)
                 -- Khi hai quả nuke va chạm trên không, vụ nổ vẫn sẽ gây một phần thiệt hại xuống mặt đất
@@ -69,6 +69,21 @@ for unitName, unitDef in pairs(UnitDefs) do
                 if not wDef.damage then wDef.damage = {} end
                 wDef.damage.default = 5500         -- Sát thương bằng khoảng 50% ICBM thật
                 wDef.damage.commanders = 1200      -- Giảm sát thương lên tướng để tránh chết bất đắc kỳ tử
+
+            -- 8. NÂNG CẤP SỨC MẠNH CHO ICBM THẬT
+            elseif wDef.customparams and (wDef.customparams.nuclear == "1" or wDef.customparams.nuclear == 1) then
+                -- x1.5 vùng ảnh hưởng (AoE), lớn hơn 50%
+                wDef.areaofeffect = (tonumber(wDef.areaofeffect) or 1920) * 1.5
+
+                -- x2 Sát thương
+                if wDef.damage then
+                    if wDef.damage.default then
+                        wDef.damage.default = (tonumber(wDef.damage.default) or 11500) * 2
+                    end
+                    if wDef.damage.commanders then
+                        wDef.damage.commanders = (tonumber(wDef.damage.commanders) or 2500) * 2
+                    end
+                end
             end
         end
     end

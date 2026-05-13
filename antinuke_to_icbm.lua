@@ -17,9 +17,10 @@ for n, d in pairs(UnitDefs) do
                 wDef.weaponvelocity = 1600
                 wDef.weaponacceleration = 100
                 wDef.turnrate = 5500
-                wDef.metalpershot = 1500
-                wDef.energypershot = 187500
-                wDef.stockpiletime = 180
+
+                wDef.metalpershot = 300
+                wDef.energypershot = 37500
+                wDef.stockpiletime = 36
 
                 wDef.areaofeffect = 1000
                 wDef.edgeeffectiveness = 0.3
@@ -29,6 +30,16 @@ for n, d in pairs(UnitDefs) do
                 end
                 wDef.damage.default = 5500
                 wDef.damage.commanders = 1200
+            elseif wDef.customparams and (wDef.customparams.nuclear == "1" or wDef.customparams.nuclear == 1) then
+                wDef.areaofeffect = (tonumber(wDef.areaofeffect) or 1920) * 1.5
+                if wDef.damage then
+                    if wDef.damage.default then
+                        wDef.damage.default = (tonumber(wDef.damage.default) or 11500) * 2
+                    end
+                    if wDef.damage.commanders then
+                        wDef.damage.commanders = (tonumber(wDef.damage.commanders) or 2500) * 2
+                    end
+                end
             end
         end
     end
