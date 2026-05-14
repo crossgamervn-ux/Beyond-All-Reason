@@ -1,27 +1,13 @@
 Chào bạn,
 
-Vấn đề bạn đang gặp phải với việc sử dụng `speceffect = "split"` cho tên lửa hạt nhân (Nuke) xuất phát từ cách mà Spring Engine xử lý cơ chế "split" (tách đạn giữa không trung).
-
-**Nguyên nhân:**
-Trong engine (cụ thể ở file `luarules/gadgets/unit_custom_weapons_behaviours.lua`), điều kiện để kích hoạt hiệu ứng "split" là:
-```lua
-local function isProjectileFalling(projectileID)
-	local _, velocityY = spGetProjectileVelocity(projectileID)
-	return velocityY < 0
-end
-```
-Tức là ngay khi vận tốc rơi (theo trục Y) của viên đạn nhỏ hơn 0 (đạn bắt đầu đi xuống), nó sẽ bị xóa bỏ và lập tức sinh ra các viên đạn con.
-Đối với vũ khí loại `StarburstLauncher` (như Nuke), đường đạn của nó sẽ bay vút lên cao, sau đó chuyển hướng và bắt đầu rơi xuống từ rất sớm (gần như ở ngay trên đầu silo phóng). Do đó, hàm kiểm tra `velocityY < 0` sẽ kích hoạt ngay lập tức, làm cho Nuke vỡ ra thành đạn con ở vị trí rất gần, thay vì bay đến mục tiêu rồi mới nổ.
+Vấn đề bạn đang gặp phải (nuke sau 6s lao đầu xuống và chạm đất mới nổ/phân mảnh) là do đặc tính của các loại tên lửa (`StarburstLauncher` hoặc `MissileLauncher`) trong Spring Engine.
+Mặc định, khi một tên lửa hết `flighttime`, nó không phát nổ ngay trên không. Thay vào đó, động cơ tên lửa sẽ tự động ngắt, và tên lửa rơi tự do theo trọng lực cho đến khi đâm xuống mặt đất rồi mới nổ.
 
 **Cách khắc phục:**
-Thay vì dùng `speceffect = "split"`, chúng ta sẽ sử dụng cơ chế **Cluster Munitions** (`cluster_def` và `cluster_number`) đã được hỗ trợ sẵn trong game. Cơ chế cluster này sẽ hoạt động khi viên đạn mẹ bị hủy (phát nổ do đâm xuống đất, va chạm trúng mục tiêu, hoặc **hết thời gian bay**).
+Để ép viên đạn **phát nổ ngay lập tức giữa không trung** ngay khi hết `flighttime` (thay vì rơi xuống), bạn cần bật thuộc tính **`burnblow = true`** cho đạn mẹ.
+Thuộc tính `burnblow` nói với engine rằng vũ khí này sẽ phát nổ ngay lập tức khi hết thời gian bay hoặc bay hết tầm bắn.
 
-**Làm sao để đạn mẹ tách sau đúng 6 giây?**
-Trong Spring Engine, thông số `flighttime` (thời gian bay) của vũ khí định nghĩa thời gian sống tối đa của viên đạn tính bằng giây. Hết thời gian này đạn sẽ nổ.
-- Nuke gốc có `flighttime` rất cao (thường khoảng 400 giây).
-- Để ép Nuke mẹ nổ và tách ra thành MIRV sau đúng 6 giây bay, bạn chỉ cần gán thêm `motherNuke.flighttime = 6`. Cơ chế Cluster sẽ bắt được sự kiện đạn nổ giữa không trung này và văng đạn con ra.
-
-Dưới đây là mã Lua đã được sửa lại hoàn chỉnh:
+Dưới đây là đoạn mã Lua hoàn chỉnh đã được cập nhật thêm `burnblow`:
 
 ```lua
 -- Mod tác giả: [Tên của bạn]
@@ -59,8 +45,11 @@ local function addMIRVToSilo(unitName, weaponName)
         -- Có thể cần cung cấp tầm bắn/tốc độ cho đạn con (Cluster tự động dùng range hoặc weaponvelocity để phân tán)
         childNuke.range = 300
 
-        -- Đặt thời gian bay cho đạn con (mặc định của nuke là 400, cần hạ xuống hợp lý, ví dụ 15 giây)
+        -- Đặt thời gian bay cho đạn con
         childNuke.flighttime = 15
+
+        -- Ngăn đạn con không bị nổ lơ lửng nếu thừa kế burnblow từ đạn mẹ
+        childNuke.burnblow = false
 
         -- Chia sát thương làm 6
         if childNuke.damage then
@@ -81,8 +70,11 @@ local function addMIRVToSilo(unitName, weaponName)
         motherNuke.customparams.cluster_def = childName
         motherNuke.customparams.cluster_number = 6
 
-        -- Quan trọng: Ép nuke mẹ phát nổ (và văng cluster) sau đúng 6 giây bay trên không
+        -- Quan trọng: Ép nuke mẹ phát nổ (và văng cluster) sau đúng 6 giây bay
         motherNuke.flighttime = 6
+
+        -- Quan trọng: Bắt buộc đạn nổ NGAY LẬP TỨC trên không khi hết flighttime, không rơi xuống đất
+        motherNuke.burnblow = true
     end
 end
 
