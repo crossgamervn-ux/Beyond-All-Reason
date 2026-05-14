@@ -1,13 +1,15 @@
 Chào bạn,
 
-Vấn đề bạn đang gặp phải (nuke sau 6s lao đầu xuống và chạm đất mới nổ/phân mảnh) là do đặc tính của các loại tên lửa (`StarburstLauncher` hoặc `MissileLauncher`) trong Spring Engine.
-Mặc định, khi một tên lửa hết `flighttime`, nó không phát nổ ngay trên không. Thay vào đó, động cơ tên lửa sẽ tự động ngắt, và tên lửa rơi tự do theo trọng lực cho đến khi đâm xuống mặt đất rồi mới nổ.
+Dưới đây là giải pháp chuẩn xác nhất để tên lửa hạt nhân (Nuke) của bạn bay đến **đúng vị trí mục tiêu** rồi mới phân mảnh (MIRV) thành đạn con.
 
-**Cách khắc phục:**
-Để ép viên đạn **phát nổ ngay lập tức giữa không trung** ngay khi hết `flighttime` (thay vì rơi xuống), bạn cần bật thuộc tính **`burnblow = true`** cho đạn mẹ.
-Thuộc tính `burnblow` nói với engine rằng vũ khí này sẽ phát nổ ngay lập tức khi hết thời gian bay hoặc bay hết tầm bắn.
+**Sai lầm thường gặp:**
+- Dùng `speceffect = "split"`: Hiệu ứng này sẽ lập tức tách đạn ngay khi đạn mẹ bắt đầu chúc đầu xuống (vận tốc Y < 0), khiến đạn bị vỡ vụn ngay trên không trung tại căn cứ.
+- Cài đặt `flighttime = 6`: Thuộc tính này giết chết viên đạn sau đúng 6 giây. Nếu mục tiêu ở xa cần 20 giây để bay tới, viên đạn sẽ nổ ngay giữa đường (hoặc ngay tại nhà) sau 6 giây chứ không bao giờ chạm được mục tiêu.
 
-Dưới đây là đoạn mã Lua hoàn chỉnh đã được cập nhật thêm `burnblow`:
+**Cách giải quyết chuẩn xác:**
+Chúng ta sử dụng cơ chế **Cluster Munitions** (`cluster_def` và `cluster_number`) và **để nguyên thời gian bay dài (flighttime) mặc định** của Nuke (tầm 400 giây). Cơ chế cluster được lập trình sẵn để tự động biết khi nào đạn đâm trúng mục tiêu và văng đạn con ra một cách hoàn hảo.
+
+Dưới đây là mã Lua chuẩn để đạn bay tới tận nơi mới tách MIRV:
 
 ```lua
 -- Mod tác giả: [Tên của bạn]
@@ -42,14 +44,8 @@ local function addMIRVToSilo(unitName, weaponName)
         -- Cluster gadget ưu tiên vũ khí dạng Cannon
         childNuke.weapontype = "Cannon"
 
-        -- Có thể cần cung cấp tầm bắn/tốc độ cho đạn con (Cluster tự động dùng range hoặc weaponvelocity để phân tán)
+        -- Đặt tầm văng cho đạn con (để nó tản ra diện rộng)
         childNuke.range = 300
-
-        -- Đặt thời gian bay cho đạn con
-        childNuke.flighttime = 15
-
-        -- Ngăn đạn con không bị nổ lơ lửng nếu thừa kế burnblow từ đạn mẹ
-        childNuke.burnblow = false
 
         -- Chia sát thương làm 6
         if childNuke.damage then
@@ -70,11 +66,8 @@ local function addMIRVToSilo(unitName, weaponName)
         motherNuke.customparams.cluster_def = childName
         motherNuke.customparams.cluster_number = 6
 
-        -- Quan trọng: Ép nuke mẹ phát nổ (và văng cluster) sau đúng 6 giây bay
-        motherNuke.flighttime = 6
-
-        -- Quan trọng: Bắt buộc đạn nổ NGAY LẬP TỨC trên không khi hết flighttime, không rơi xuống đất
-        motherNuke.burnblow = true
+        -- Không giới hạn flighttime xuống thấp, không ép nổ giữa chừng.
+        -- Cứ để đạn bay tự nhiên đến mục tiêu rồi nổ tung thành Cluster!
     end
 end
 
