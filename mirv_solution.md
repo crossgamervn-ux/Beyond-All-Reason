@@ -1,15 +1,13 @@
 Chào bạn,
 
-Dưới đây là giải pháp chuẩn xác nhất để tên lửa hạt nhân (Nuke) của bạn bay đến **đúng vị trí mục tiêu** rồi mới phân mảnh (MIRV) thành đạn con.
+Nếu bạn muốn hiệu ứng các đầu đạn con **văng ra thật xa** và nổ trải đều khắp căn cứ (chứ không bị chụm lại một chỗ), bạn cần điều chỉnh độ tản mát (scatter) của đạn con.
 
-**Sai lầm thường gặp:**
-- Dùng `speceffect = "split"`: Hiệu ứng này sẽ lập tức tách đạn ngay khi đạn mẹ bắt đầu chúc đầu xuống (vận tốc Y < 0), khiến đạn bị vỡ vụn ngay trên không trung tại căn cứ.
-- Cài đặt `flighttime = 6`: Thuộc tính này giết chết viên đạn sau đúng 6 giây. Nếu mục tiêu ở xa cần 20 giây để bay tới, viên đạn sẽ nổ ngay giữa đường (hoặc ngay tại nhà) sau 6 giây chứ không bao giờ chạm được mục tiêu.
+**Nguyên lý tản mát của đạn Cluster:**
+Trong hệ thống của game, tốc độ và độ văng xa của các đạn con được tính toán trực tiếp dựa trên thuộc tính **`range`** (tầm bắn) của chính viên đạn con đó.
+- Nếu `range` thấp (ví dụ 300), đạn con sẽ rớt lẹt đẹt ngay tại chỗ đạn mẹ nổ.
+- Nếu bạn tăng `range` lên thật cao (ví dụ `1200` hoặc `1500`), lực văng sẽ cực mạnh, đẩy các đầu đạn tủa ra khắp một vùng rộng lớn tạo ra hiệu ứng rải thảm cực kỳ đẹp mắt và tàn phá!
 
-**Cách giải quyết chuẩn xác:**
-Chúng ta sử dụng cơ chế **Cluster Munitions** (`cluster_def` và `cluster_number`) và **để nguyên thời gian bay dài (flighttime) mặc định** của Nuke (tầm 400 giây). Cơ chế cluster được lập trình sẵn để tự động biết khi nào đạn đâm trúng mục tiêu và văng đạn con ra một cách hoàn hảo.
-
-Dưới đây là mã Lua chuẩn để đạn bay tới tận nơi mới tách MIRV:
+Dưới đây là mã Lua đã được cập nhật, tập trung vào việc đẩy mạnh độ văng của MIRV:
 
 ```lua
 -- Mod tác giả: [Tên của bạn]
@@ -41,11 +39,12 @@ local function addMIRVToSilo(unitName, weaponName)
             childNuke.customparams.cluster_def = nil
         end
 
-        -- Cluster gadget ưu tiên vũ khí dạng Cannon
+        -- Cluster gadget ưu tiên vũ khí dạng Cannon để tính đường đạn parabol
         childNuke.weapontype = "Cannon"
 
-        -- Đặt tầm văng cho đạn con (để nó tản ra diện rộng)
-        childNuke.range = 300
+        -- TẠO ĐỘ VĂNG XA: Tăng `range` lên thật cao để đầu đạn tản ra diện rộng.
+        -- Bạn có thể chỉnh con số 1500 này to hơn hoặc nhỏ hơn tùy ý muốn!
+        childNuke.range = 1500
 
         -- Chia sát thương làm 6
         if childNuke.damage then
@@ -65,9 +64,6 @@ local function addMIRVToSilo(unitName, weaponName)
         -- trong `alldefs_post.lua` sẽ TỰ ĐỘNG làm việc đó.
         motherNuke.customparams.cluster_def = childName
         motherNuke.customparams.cluster_number = 6
-
-        -- Không giới hạn flighttime xuống thấp, không ép nổ giữa chừng.
-        -- Cứ để đạn bay tự nhiên đến mục tiêu rồi nổ tung thành Cluster!
     end
 end
 
