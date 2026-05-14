@@ -136,6 +136,7 @@ for n, d in pairs(UnitDefs) do
             -- C) ICBM MIRV Split
             elseif wDef.customparams and (wDef.customparams.nuclear == "1" or wDef.customparams.nuclear == 1) then
                 -- Buff genuine ICBMs first
+                wDef.stockpiletime = 90
                 wDef.areaofeffect = (tonumber(wDef.areaofeffect) or 1920) * 1.5
                 if wDef.damage then
                     if wDef.damage.default then wDef.damage.default = (tonumber(wDef.damage.default) or 11500) * 2 end
@@ -143,7 +144,8 @@ for n, d in pairs(UnitDefs) do
                 end
 
                 -- Create MIRV Warhead Submunition
-                local warheadName = wName .. "_mirv_warhead"
+                -- Note: Spring Engine registers local weapondef names as global by prepending the unit name
+                local warheadName = n .. "_" .. wName .. "_mirv_warhead"
                 local warhead = {}
                 for k, v in pairs(wDef) do
                     if type(v) ~= "table" then
@@ -170,23 +172,25 @@ for n, d in pairs(UnitDefs) do
                 warhead.sprayangle = 15000 -- Max scatter
                 warhead.mygravity = 0.2 -- Fall slowly and majestically
 
-                newWarheads[warheadName] = warhead
+                -- Add to local queue without the unit prefix so it maps correctly inside this unit's weapondefs
+                newWarheads[wName .. "_mirv_warhead"] = warhead
 
                 -- Configure ICBM to act as the Cluster parent
                 if not wDef.customparams then wDef.customparams = {} end
+                -- Use the global name for the cluster_def lookup
                 wDef.customparams.cluster_def = warheadName
                 wDef.customparams.cluster_number = 6
 
-                -- HACK: Use proximity and tracking edge-cases in tweakdefs to force early air-burst
+                -- To make the MIRV airburst naturally without breaking its trajectory,
+                -- we keep 'tracks=true' but give it a short flight time relative to its speed,
+                -- or just let the engine's target intercept trigger the burst.
                 wDef.collidefriendly = false
                 wDef.collidefeature = false
                 wDef.proximitypriority = -1  -- forces projectile to evaluate targets much earlier
                 wDef.targetable = 1
                 wDef.interceptor = 0
-                wDef.tracks = false          -- prevents the missile from arcing all the way directly into the target's origin
-
-                -- To simulate the mid-air drop effectively, limit the weaponvelocity drastically
-                -- towards the end of the flight, letting it "fall" short over the target
+                wDef.tracks = true           -- MUST track, otherwise StarburstLauncher shoots straight up forever
+                wDef.flighttime = 400        -- Keep normal flighttime so it doesn't self destruct on launch
                 wDef.turnrate = 1000
             end
 
