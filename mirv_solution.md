@@ -14,9 +14,12 @@ Tức là ngay khi vận tốc rơi (theo trục Y) của viên đạn nhỏ hơ
 Đối với vũ khí loại `StarburstLauncher` (như Nuke), đường đạn của nó sẽ bay vút lên cao, sau đó chuyển hướng và bắt đầu rơi xuống từ rất sớm (gần như ở ngay trên đầu silo phóng). Do đó, hàm kiểm tra `velocityY < 0` sẽ kích hoạt ngay lập tức, làm cho Nuke vỡ ra thành đạn con ở vị trí rất gần, thay vì bay đến mục tiêu rồi mới nổ.
 
 **Cách khắc phục:**
-Thay vì dùng `speceffect = "split"`, chúng ta sẽ sử dụng cơ chế **Cluster Munitions** (`cluster_def` và `cluster_number`) đã được hỗ trợ sẵn trong game. Cơ chế cluster này sẽ đảm bảo viên đạn mẹ bay đến tận nơi mục tiêu (hoặc khi hết thời gian bay) rồi mới nổ và phân tán thành các viên đạn con.
+Thay vì dùng `speceffect = "split"`, chúng ta sẽ sử dụng cơ chế **Cluster Munitions** (`cluster_def` và `cluster_number`) đã được hỗ trợ sẵn trong game. Cơ chế cluster này sẽ hoạt động khi viên đạn mẹ bị hủy (phát nổ do đâm xuống đất, va chạm trúng mục tiêu, hoặc **hết thời gian bay**).
 
-Về lỗi `Could not find weapon def matching cluster_def: armsilo_armsilo_...`, nguyên nhân là do trong file `gamedata/alldefs_post.lua` của game, engine **đã tự động** gắn thêm tên unit (`unitDefName .. "_"`) vào trước giá trị `cluster_def`. Do đó, chúng ta KHÔNG cần (và không được) tự nối tên unit vào nữa, nếu không sẽ bị điệp từ (double prefix).
+**Làm sao để đạn mẹ tách sau đúng 6 giây?**
+Trong Spring Engine, thông số `flighttime` (thời gian bay) của vũ khí định nghĩa thời gian sống tối đa của viên đạn tính bằng giây. Hết thời gian này đạn sẽ nổ.
+- Nuke gốc có `flighttime` rất cao (thường khoảng 400 giây).
+- Để ép Nuke mẹ nổ và tách ra thành MIRV sau đúng 6 giây bay, bạn chỉ cần gán thêm `motherNuke.flighttime = 6`. Cơ chế Cluster sẽ bắt được sự kiện đạn nổ giữa không trung này và văng đạn con ra.
 
 Dưới đây là mã Lua đã được sửa lại hoàn chỉnh:
 
@@ -56,6 +59,9 @@ local function addMIRVToSilo(unitName, weaponName)
         -- Có thể cần cung cấp tầm bắn/tốc độ cho đạn con (Cluster tự động dùng range hoặc weaponvelocity để phân tán)
         childNuke.range = 300
 
+        -- Đặt thời gian bay cho đạn con (mặc định của nuke là 400, cần hạ xuống hợp lý, ví dụ 15 giây)
+        childNuke.flighttime = 15
+
         -- Chia sát thương làm 6
         if childNuke.damage then
             for k, v in pairs(childNuke.damage) do
@@ -74,6 +80,9 @@ local function addMIRVToSilo(unitName, weaponName)
         -- trong `alldefs_post.lua` sẽ TỰ ĐỘNG làm việc đó.
         motherNuke.customparams.cluster_def = childName
         motherNuke.customparams.cluster_number = 6
+
+        -- Quan trọng: Ép nuke mẹ phát nổ (và văng cluster) sau đúng 6 giây bay trên không
+        motherNuke.flighttime = 6
     end
 end
 
