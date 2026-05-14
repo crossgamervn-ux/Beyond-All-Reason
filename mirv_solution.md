@@ -12,7 +12,7 @@ Trong hệ thống Spring Engine hiện tại, **không có thông số mặc đ
 - `flighttime` cố định sẽ khiến đạn nổ sớm ở mục tiêu xa, hoặc chạm đất ở mục tiêu gần.
 - Cơ chế `cluster` là giải pháp an toàn và hoàn hảo nhất cho Nuke. Nó bắt buộc đạn phải đâm xuống đất (hoặc đập vào khiên năng lượng) rồi mới văng đạn con ra rải thảm. Nhưng bù lại, nó luôn luôn nổ chính xác ở mọi khoảng cách.
 
-Dưới đây là đoạn code **hoàn thiện và đẹp nhất** để nuke tản ra diện rộng khi đâm trúng mục tiêu (sử dụng Cluster với lực văng xa mạnh `range = 1500`):
+Dưới đây là đoạn code **hoàn thiện và đẹp nhất** để nuke tản ra diện rộng khi đâm trúng mục tiêu (Bao gồm cả phe ARM, CORE và LEGION):
 
 ```lua
 -- Mod tác giả: [Tên của bạn]
@@ -71,7 +71,12 @@ local function addMIRVToSilo(unitName, weaponName)
     end
 end
 
--- Kích hoạt MIRV cho Silo nuke
+-- Kích hoạt MIRV cho Silo phe CORE
 addMIRVToSilo("corsilo", "crblmssl")
+
+-- Kích hoạt MIRV cho Silo phe ARM
 addMIRVToSilo("armsilo", "nuclear_missile")
+
+-- Kích hoạt MIRV cho Silo phe LEGION
+addMIRVToSilo("legsilo", "legicbm")
 ```
