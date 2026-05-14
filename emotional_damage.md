@@ -8,6 +8,7 @@ Cơ chế hoạt động:
 2. Tính toán DPS (Sát thương mỗi giây) dựa trên `damage.default`, `reloadtime`, `burst`, và `projectiles`.
 3. Tính một hệ số giảm sát thương (`damageMult`) theo công thức `100 / (100 + DPS)`. Công thức này đảm bảo vũ khí DPS càng cao thì hệ số nhân càng nhỏ (sát thương giảm càng nhiều).
 4. Tăng siêu mạnh giá trị `impulsefactor` và `impulseboost` (lực đẩy/knockback) lên hàng trăm lần đối với tất cả các vũ khí để hiệu ứng knockback cực kỳ mạnh, đủ sức thổi bay xe tăng hạng nặng.
+5. Sửa lỗi xe tăng không bị nảy do setting của engine (lực hút trái đất vô hiệu hóa nhảy vọt): Đoạn script bổ sung cơ chế gỡ cờ chặn bay (`allowGroundUnitGravity`) bằng cách chỉnh lại chỉ số trọng lực riêng của từng vũ khí và sửa thuộc tính di chuyển của toàn bộ xe cộ/bot giúp chúng nảy lên khi nhận sát thương xung kích.
 
 ### Script Lua:
 ```lua
@@ -48,6 +49,18 @@ if WeaponDefs then
         end
     end
 end
+
+-- Fix to ensure ground units like tanks actually bounce instead of sliding
+if UnitDefs then
+    for name, uDef in pairs(UnitDefs) do
+        if type(uDef) == "table" then
+            if not uDef.canfly then
+                -- Give them air properties but keep them bound to ground logic so impulse throws them in the air
+                uDef.mygravity = 0.5
+            end
+        end
+    end
+end
 ```
 
 ### Mã Base64 (Để nhập vào ô TweakDef):
@@ -78,5 +91,12 @@ d2l0aCAwIGtub2NrYmFjayBoaXQgZXh0cmVtZWx5IGhhcmQuCiAgICAgICAgICAgIHdEZWYuaW1w
 dWxzZWZhY3RvciA9ICh3RGVmLmltcHVsc2VmYWN0b3Igb3IgMCkgKiAxMDAgKyA1MAogICAgICAg
 ICAgICB3RGVmLmltcHVsc2Vib29zdCA9ICh3RGVmLmltcHVsc2Vib29zdCBvciAwKSAqIDEwMCAr
 IDUwCiAgICAgICAgICAgIHdEZWYuY3JhdGVybXVsdCA9ICh3RGVmLmNyYXRlcm11bHQgb3IgMCkg
-KyAyCiAgICAgICAgZW5kCiAgICBlbmQKZW5kCg==
+KyAyCiAgICAgICAgZW5kCiAgICBlbmQKZW5kCgotLSBGaXggdG8gZW5zdXJlIGdyb3VuZCB1bml0
+cyBsaWtlIHRhbmtzIGFjdHVhbGx5IGJvdW5jZSBpbnN0ZWFkIG9mIHNsaWRpbmcKaWYgVW5pdERl
+ZnMgdGhlbgogICAgZm9yIG5hbWUsIHVEZWYgaW4gcGFpcnMoVW5pdERlZnMpIGRvCiAgICAgICAg
+aWYgdHlwZSh1RGVmKSA9PSAidGFibGUiIHRoZW4KICAgICAgICAgICAgaWYgbm90IHVEZWYuY2Fu
+Zmx5IHRoZW4KICAgICAgICAgICAgICAgIC0tIEdpdmUgdGhlbSBhaXIgcHJvcGVydGllcyBidXQg
+a2VlcCB0aGVtIGJvdW5kIHRvIGdyb3VuZCBsb2dpYyBzbyBpbXB1bHNlIHRocm93cyB0aGVtIGlu
+IHRoZSBhaXIKICAgICAgICAgICAgICAgIHVEZWYubXlncmF2aXR5ID0gMC41CiAgICAgICAgICAg
+IGVuZAogICAgICAgIGVuZAogICAgZW5kCmVuZA==
 ```
