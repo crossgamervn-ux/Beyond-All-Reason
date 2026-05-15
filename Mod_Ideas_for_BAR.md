@@ -54,3 +54,51 @@ Dựa trên việc phân tích mã nguồn game (đặc biệt là khả năng c
 ---
 
 👉 **Bạn thấy hứng thú với ý tưởng nào nhất?** Hoặc bạn có muốn tôi kết hợp một vài ý tưởng trên lại để viết thành một bộ code mẫu `alldefs_post.lua` hoàn chỉnh cho bạn không?
+---
+## 6. 🎆 Đạn Chùm Chết Chóc (Cluster Munitions)
+**Cảm hứng:** Vũ khí hạng nặng trong các game bắn súng hoặc RTS.
+**Ý tưởng:**
+- Nâng cấp mọi loại vũ khí có nổ (Rocket, Pháo, Bom) để khi đạn chạm mục tiêu, nó không chỉ nổ một lần mà sẽ **vỡ ra thành nhiều đầu đạn nhỏ hơn** văng ra xung quanh, tiếp tục gây sát thương diện rộng.
+- **Gameplay:** Rất hiệu quả để dọn dẹp bầy lính (Swarm). Biến các loạt pháo kích trở thành cơn mưa lửa thực sự, bao trùm toàn bộ căn cứ địch.
+**Cách làm (Code):**
+- Trong `WeaponDefs`, duyệt qua các vũ khí có `areaofeffect > 50` (hoặc các loại vũ khí là đạn nổ).
+- Sử dụng thuộc tính `cegtag` để tạo hiệu ứng nổ phụ, hoặc sử dụng `spawnprojectilesonexplode` / `projectiles` (nếu engine hỗ trợ) để sinh ra các viên đạn nhỏ hơn (ví dụ đạn của súng máy hạng nhẹ) ngay tại tọa độ viên đạn chính phát nổ.
+
+## 7. ⚡ Đạn Xuyên Thấu (Piercing / Railgun Upgrades)
+**Cảm hứng:** *Doom* (Railgun), *Halo*.
+**Ý tưởng:**
+- Biến các loại vũ khí laser hoặc súng ngắm (Sniper/Kinetics) thành vũ khí có khả năng **xuyên thấu**. Đạn bay qua unit đầu tiên sẽ không biến mất mà tiếp tục bay thẳng, gây sát thương cho mọi kẻ địch đứng trên đường đạn.
+- **Gameplay:** Khuyến khích người chơi xếp đội hình hàng ngang thay vì xếp hàng dọc, vì một phát đạn Railgun có thể dọn sạch một hàng lính xếp sát nhau.
+**Cách làm (Code):**
+- Tìm các vũ khí có `weapontype = 'LaserCannon'` hoặc `BeamLaser`.
+- Bật thuộc tính `piercing = true` (nếu có) hoặc chỉnh sửa `waterweapon = true` và `firestarter` để thay đổi đặc tính đường đạn.
+- Có thể kết hợp với việc giảm tốc độ bắn (`reloadtime` x2) nhưng nhân đôi sát thương (`damage.default` x2) để tạo cảm giác nặng đô.
+
+## 8. 🩸 Vũ Khí Hút Máu (Vampiric Weapons)
+**Cảm hứng:** Các trang bị hút máu trong game MOBA hoặc RPG.
+**Ý tưởng:**
+- Nâng cấp đặc biệt cho một số loại quân cận chiến hoặc lính tinh nhuệ: **Mỗi khi gây sát thương cho kẻ địch, chúng sẽ được hồi lại một lượng máu tương ứng**.
+- **Gameplay:** Một đạo quân được nâng cấp hút máu có thể sống sót vô cùng lâu trong giao tranh nếu chúng liên tục được xả đạn, biến chúng thành những cỗ xe tăng càn quét chiến trường.
+**Cách làm (Code):**
+- Trong Spring Engine, việc này khó thực hiện chỉ bằng `alldefs_post.lua` (vì cần xử lý logic theo thời gian thực).
+- **Cách làm:** Phải viết một file Gadget nhỏ (ví dụ `LuaRules/Gadgets/weapon_vampiric.lua`). Lắng nghe sự kiện `UnitDamaged`. Nếu `attackerID` sở hữu vũ khí hút máu, gọi hàm `Spring.AddUnitDamage(attackerID, -damage * 0.5)` (Hồi lại 50% lượng sát thương vừa gây ra).
+
+## 9. 🔋 Quá Tải Năng Lượng (Energy Overcharge)
+**Cảm hứng:** *Supreme Commander* (Overcharge), *Total Annihilation*.
+**Ý tưởng:**
+- Nâng cấp vũ khí cho các trụ phòng thủ (Turrets) hoặc Commander. Thay vì chỉ bắn đạn thường, chúng có thể rút một lượng lớn Energy (Năng lượng) từ kho dự trữ của bạn để **tăng sát thương lên gấp 5-10 lần** cho mỗi phát bắn.
+- **Gameplay:** Giải quyết bài toán dư thừa năng lượng ở cuối game. Khi bạn có nền kinh tế mạnh, các trụ thủ của bạn sẽ tự động trở thành các siêu vũ khí one-hit-kill. Nhưng nếu cạn năng lượng, chúng sẽ phế.
+**Cách làm (Code):**
+- Trong `alldefs_post.lua`, tìm các vũ khí của Turret.
+- Chỉnh sửa thuộc tính `energypershot` thành một con số rất cao (ví dụ: `1000` hoặc `5000`).
+- Tăng giá trị `damage.default` lên tương ứng (x5 hoặc x10 lần).
+
+## 10. 🎯 Lễ Hội Pháo Binh (Artillery Fest / Infinite Range)
+**Cảm hứng:** Chế độ *URFs* hoặc *Artillery Only*.
+**Ý tưởng:**
+- Nâng cấp vũ khí để **tầm bắn của mọi loại súng (kể cả súng lục) được tăng lên cực kỳ xa** (gấp 5 lần), nhưng **độ phân tán (inaccuracy) cũng tăng mạnh**.
+- **Gameplay:** Đưa game trở thành một cuộc đấu pháo chiến lược. Đạn bay rợp trời từ khắp bản đồ, không có chỗ nào là an toàn tuyệt đối. Đòi hỏi khả năng dự đoán hướng di chuyển của địch thay vì lao vào giáp lá cà.
+**Cách làm (Code):**
+- Trong `WeaponDefs`, nhân giá trị `range` của tất cả vũ khí lên `5`.
+- Tăng giá trị `accuracy` và `sprayangle` lên mức cực cao (làm đạn tản mát ra nhiều hướng).
+- Có thể giảm tốc độ bay của đạn (`weaponvelocity` giảm 50%) để người chơi có cơ hội né tránh.
