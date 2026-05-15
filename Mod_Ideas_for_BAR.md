@@ -102,3 +102,45 @@ Dựa trên việc phân tích mã nguồn game (đặc biệt là khả năng c
 - Trong `WeaponDefs`, nhân giá trị `range` của tất cả vũ khí lên `5`.
 - Tăng giá trị `accuracy` và `sprayangle` lên mức cực cao (làm đạn tản mát ra nhiều hướng).
 - Có thể giảm tốc độ bay của đạn (`weaponvelocity` giảm 50%) để người chơi có cơ hội né tránh.
+
+---
+## 11. ☢️ Mưa Hạt Nhân (Nuke MIRV / Cluster Nuke)
+**Cảm hứng:** Tên lửa đạn đạo liên lục địa mang nhiều đầu đạn độc lập (MIRV), *Defcon*.
+**Ý tưởng:**
+- Nâng cấp vũ khí Hạt Nhân tối thượng: Khi quả Nuke (Tên lửa hạt nhân) bay đến đỉnh điểm của quỹ đạo (flight apex) hoặc gần chạm đất, nó sẽ không chỉ nổ một lần. Nó sẽ **tách ra thành 5-10 quả Nuke nhỏ hơn** rải thảm một vùng bản đồ rộng lớn. Chống lại thứ này là gần như không thể nếu không có một mạng lưới phòng không dày đặc.
+- **Gameplay:** Biến Nuke từ vũ khí phá hủy một cứ điểm thành vũ khí hủy diệt toàn bộ màn hình, mang lại cảm giác cực kỳ mãn nhãn và "OP" (Overpowered).
+**Cách làm (Code):**
+- Tìm các vũ khí có `weapontype = 'StarburstLauncher'` và có sức sát thương cực lớn (Nuke).
+- Có hai cách trong Spring Engine:
+  1. Dùng **Cluster Mechanic**: Thêm `customparams.cluster_def = 'tên_vũ_khí_nuke_nhỏ'` và `customparams.cluster_number = 10`. Quả nuke sẽ vỡ ra thành 10 quả khi nổ.
+  2. Dùng **Speceffect Split**: Thêm `customparams.speceffect = "split"`, `customparams.speceffect_def = 'tên_vũ_khí_nuke_nhỏ'`, và `customparams.speceffect_number = 8`. Cách này làm tên lửa vỡ ra *ngay giữa không trung* (flight apex), rải đầu đạn xuống như mưa. (Lưu ý: phải tạo một `WeaponDefs` mới cho "nuke nhỏ" và đảm bảo nó không tự tách ra tiếp để tránh crash game).
+
+## 12. 🕳️ Bom Hố Đen (Black Hole Implosion)
+**Cảm hứng:** *Unreal Tournament*, Zarya (Overwatch).
+**Ý tưởng:**
+- Biến một loại vũ khí (ví dụ: đạn pháo của Commander hoặc T3) thành một quả bom trọng lực.
+- Khi đạn nổ, thay vì đẩy kẻ địch văng ra xa (Knockback), nó sẽ **hút tất cả unit và xác chết xung quanh vào một điểm trung tâm** với lực cực mạnh, gom chúng lại thành một cục. Ngay sau đó, vụ nổ phụ sẽ tiêu diệt tất cả.
+- **Gameplay:** Siêu thú vị để gom lính địch lại, sau đó cho đồng đội ném bom hoặc dùng vũ khí AoE dọn sạch.
+**Cách làm (Code):**
+- Trong `WeaponDefs`, thiết lập thuộc tính `impulsefactor` và `impulseboost` thành **số âm** (Ví dụ: `-2.0`).
+- Khi xung lực (impulse) là số âm, engine sẽ kéo các unit về phía tâm vụ nổ thay vì đẩy chúng ra. Đặt `areaofeffect` thật lớn (ví dụ: `800`) để hút được nhiều quân.
+
+## 13. 🦠 Vũ Khí Lây Nhiễm (Zombie/Nanobot Virus)
+**Cảm hứng:** *StarCraft* (Mutalisk/Broodling), Game Zombie.
+**Ý tưởng:**
+- Súng bắn ra các con bọ nano. Nếu một unit địch bị tiêu diệt bởi vũ khí này, từ xác của chúng sẽ **ngay lập tức sinh ra một unit của phe bạn** (ví dụ: một con robot cận chiến rẻ tiền, nhện máy, hoặc Scavenger).
+- **Gameplay:** Càng bắn giết, quân đội của bạn càng đông. Cực kỳ đáng sợ nếu bạn dùng vũ khí này dọn một bầy lính yếu của địch.
+**Cách làm (Code):**
+- Cần viết một script Gadget. Lắng nghe sự kiện `UnitDestroyed`.
+- Nếu sát thương kết liễu đến từ vũ khí "Virus", lấy tọa độ của unit vừa chết (`Spring.GetUnitPosition`), sau đó lập tức gọi `Spring.CreateUnit("tên_unit_nhện", x, y, z, attackerAllyTeam)`.
+
+## 14. ☄️ Gọi Thiên Thạch (Orbital Kinetic Strike / Rods from God)
+**Cảm hứng:** *Call of Duty: Ghosts*, *Command & Conquer* (Ion Cannon).
+**Ý tưởng:**
+- Thay vì bắn đạn từ súng, một số vũ khí bắn tỉa (Sniper/Spy) sẽ biến thành "thiết bị chỉ thị mục tiêu".
+- Khi bắn trúng địch, một tia laser đỏ sẽ khóa mục tiêu. Sau 3 giây, một "Cột trụ" (đạn cực nhanh) từ vệ tinh ngoài không gian sẽ **đâm thẳng góc 90 độ từ trên trời xuống** trúng ngay vị trí đó, xuyên qua mọi lớp khiên và làm nát bét mọi thứ.
+- **Gameplay:** Vũ khí tàn phá tập trung (Single-target), nhìn cực kỳ điện ảnh.
+**Cách làm (Code):**
+- Trong `WeaponDefs` của vũ khí mục tiêu, đặt `weapontype = 'Cannon'` hoặc `MissileLauncher`.
+- Sửa quỹ đạo đạn: set `trajectoryHeight = 1` hoặc sử dụng vũ khí dạng `Drop` thả từ trên cao. Hoặc cấu hình đạn rơi thẳng đứng (Vertical).
+- Thay thế model đạn (`model = 'rod.s3o'`) và thiết lập vận tốc siêu nhanh (`weaponvelocity = 5000`) để nó cắm thẳng xuống đất ngay lập tức sau khi spawn.
