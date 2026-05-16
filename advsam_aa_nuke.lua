@@ -16,8 +16,10 @@ if UnitDefs then
 end
 
 -- Chỉnh sửa WeaponDefs (Cơ chế đạn)
+-- Trong Spring/BAR, tên weapondefs thường được tiền tố bằng tên unit
+-- (ví dụ: armmercury_arm_advsam) do quá trình xử lý của gamedata/weapondefs_post.lua
 if WeaponDefs then
-	local targetWeapons = { "arm_advsam", "cor_advsam" }
+	local targetWeapons = { "armmercury_arm_advsam", "corscreamer_cor_advsam" }
 
 	for _, wName in ipairs(targetWeapons) do
 		if WeaponDefs[wName] then
