@@ -5,12 +5,23 @@ if UnitDefs then
     for _, unitName in ipairs(units_to_modify) do
         local ud = UnitDefs[unitName]
         if ud then
+            -- Thay đổi thành không thể tấn công thông thường
+            ud.canattack = false
+
+            -- Thêm customparams cho khiên để UI hiển thị vòng shield
+            ud.customparams = ud.customparams or {}
+            ud.customparams.shield_power = 6175
+            ud.customparams.shield_radius = 550
+
+            -- Ghi đè vũ khí duy nhất thành Shield (không bắn được đạn nữa)
             ud.weapons = {
                 [1] = {
                     def = "REPULSOR",
                     onlytargetcategory = "NOTSUB",
                 }
             }
+
+            -- Thêm định nghĩa vũ khí Shield y hệt trụ armgate (Plasma Repulsor)
             ud.weapondefs = ud.weapondefs or {}
             ud.weapondefs.repulsor = {
                 avoidfeature = false,
