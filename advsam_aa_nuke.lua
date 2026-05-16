@@ -25,7 +25,8 @@ if UnitDefs then
 			wDef.damage = wDef.damage or {}
 			wDef.damage.default = 10000
 			wDef.damage.vtol = 10000
-			wDef.flighttime = 10
+			wDef.flighttime = 15
+			wDef.range = 3600
 		end
 	end
 
@@ -51,7 +52,8 @@ if UnitDefs then
 			wDef.damage = wDef.damage or {}
 			wDef.damage.default = 10000
 			wDef.damage.vtol = 10000
-			wDef.flighttime = 10
+			wDef.flighttime = 15
+			wDef.range = 3600
 		end
 	end
 end
@@ -76,7 +78,8 @@ if WeaponDefs then
 			WeaponDefs[wName].damage = WeaponDefs[wName].damage or {}
 			WeaponDefs[wName].damage.default = 10000
 			WeaponDefs[wName].damage.vtol = 10000
-			WeaponDefs[wName].flighttime = 10
+			WeaponDefs[wName].flighttime = 15
+			WeaponDefs[wName].range = 3600
 		end
 	end
 end

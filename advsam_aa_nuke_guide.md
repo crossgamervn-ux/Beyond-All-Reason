@@ -10,7 +10,8 @@ Theo yêu cầu mới của bạn, chúng ta sẽ mở rộng bản mod để ba
 1. **Khả năng bám đuổi:** Bật lại `tracks = true` và `turnrate = 99000`. Tên lửa sẽ ngoặt liên tục để đuổi theo máy bay.
 2. **Sát thương và Bán kính nổ:** Dù đã bị giảm nhẹ để cân bằng, bán kính nổ (`areaofeffect`) vẫn ở mức `1400` (lớn hơn nuke tiêu chuẩn là 1280) và sát thương là `10000`, quá đủ để hủy diệt các phi đội lớn.
 3. **Giới hạn tốc độ bắn:** Vì quá mạnh, thời gian nạp đạn (`reloadtime`) bị tăng lên `20` giây (thay vì 1.8 giây như cũ).
-4. **Tăng giá thành xây dựng:**
+4. **Tầm bắn (Range):** Tầm bắn được nhân lên 1.5 lần, đạt mức `3600` (gốc là 2400). Thời gian bay của tên lửa cũng được tăng lên để đảm bảo trúng đích từ xa.
+5. **Tăng giá thành xây dựng:**
    - **Metal:** 7000 (gốc: 1600~1650)
    - **Energy:** 100000 (gốc: 32000~33000)
    - **Build time:** 150000 (gốc: 28000)
@@ -47,7 +48,8 @@ if UnitDefs then
 			wDef.damage = wDef.damage or {}
 			wDef.damage.default = 10000
 			wDef.damage.vtol = 10000
-			wDef.flighttime = 10
+			wDef.flighttime = 15
+			wDef.range = 3600
 		end
 	end
 
@@ -73,7 +75,8 @@ if UnitDefs then
 			wDef.damage = wDef.damage or {}
 			wDef.damage.default = 10000
 			wDef.damage.vtol = 10000
-			wDef.flighttime = 10
+			wDef.flighttime = 15
+			wDef.range = 3600
 		end
 	end
 end
@@ -98,7 +101,8 @@ if WeaponDefs then
 			WeaponDefs[wName].damage = WeaponDefs[wName].damage or {}
 			WeaponDefs[wName].damage.default = 10000
 			WeaponDefs[wName].damage.vtol = 10000
-			WeaponDefs[wName].flighttime = 10
+			WeaponDefs[wName].flighttime = 15
+			WeaponDefs[wName].range = 3600
 		end
 	end
 end
