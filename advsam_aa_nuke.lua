@@ -5,8 +5,8 @@ if UnitDefs then
 	-- Chỉnh sửa UnitDefs (Giá thành và thời gian xây dựng)
 	if UnitDefs["armmercury"] then
 		UnitDefs["armmercury"].buildtime = 150000
-		UnitDefs["armmercury"].metalcost = 6500
-		UnitDefs["armmercury"].energycost = 90000
+		UnitDefs["armmercury"].metalcost = 8000
+		UnitDefs["armmercury"].energycost = 120000
 
 		-- Chỉnh sửa trực tiếp weapondefs nằm trong UnitDefs
 		if UnitDefs["armmercury"].weapondefs and UnitDefs["armmercury"].weapondefs["arm_advsam"] then
@@ -15,24 +15,24 @@ if UnitDefs then
 			wDef.turnrate = 99000
 			wDef.trajectoryheight = 0.55
 			wDef.reloadtime = 20
-			wDef.areaofeffect = 2000
-			wDef.craterareaofeffect = 2000
+			wDef.areaofeffect = 1500
+			wDef.craterareaofeffect = 1500
 			wDef.explosiongenerator = "custom:newnuke"
 			wDef.soundhit = "nukearm"
 			wDef.soundstart = "nukelaunch"
 			wDef.customparams = wDef.customparams or {}
 			wDef.customparams.nuclear = 1
 			wDef.damage = wDef.damage or {}
-			wDef.damage.default = 15000
-			wDef.damage.vtol = 15000
+			wDef.damage.default = 11000
+			wDef.damage.vtol = 11000
 			wDef.flighttime = 10
 		end
 	end
 
 	if UnitDefs["corscreamer"] then
 		UnitDefs["corscreamer"].buildtime = 150000
-		UnitDefs["corscreamer"].metalcost = 6500
-		UnitDefs["corscreamer"].energycost = 90000
+		UnitDefs["corscreamer"].metalcost = 8000
+		UnitDefs["corscreamer"].energycost = 120000
 
 		-- Chỉnh sửa trực tiếp weapondefs nằm trong UnitDefs
 		if UnitDefs["corscreamer"].weapondefs and UnitDefs["corscreamer"].weapondefs["cor_advsam"] then
@@ -41,16 +41,16 @@ if UnitDefs then
 			wDef.turnrate = 99000
 			wDef.trajectoryheight = 0.55
 			wDef.reloadtime = 20
-			wDef.areaofeffect = 2000
-			wDef.craterareaofeffect = 2000
+			wDef.areaofeffect = 1500
+			wDef.craterareaofeffect = 1500
 			wDef.explosiongenerator = "custom:newnuke"
 			wDef.soundhit = "nukearm"
 			wDef.soundstart = "nukelaunch"
 			wDef.customparams = wDef.customparams or {}
 			wDef.customparams.nuclear = 1
 			wDef.damage = wDef.damage or {}
-			wDef.damage.default = 15000
-			wDef.damage.vtol = 15000
+			wDef.damage.default = 11000
+			wDef.damage.vtol = 11000
 			wDef.flighttime = 10
 		end
 	end
@@ -66,16 +66,16 @@ if WeaponDefs then
 			WeaponDefs[wName].turnrate = 99000
 			WeaponDefs[wName].trajectoryheight = 0.55
 			WeaponDefs[wName].reloadtime = 20
-			WeaponDefs[wName].areaofeffect = 2000
-			WeaponDefs[wName].craterareaofeffect = 2000
+			WeaponDefs[wName].areaofeffect = 1500
+			WeaponDefs[wName].craterareaofeffect = 1500
 			WeaponDefs[wName].explosiongenerator = "custom:newnuke"
 			WeaponDefs[wName].soundhit = "nukearm"
 			WeaponDefs[wName].soundstart = "nukelaunch"
 			WeaponDefs[wName].customparams = WeaponDefs[wName].customparams or {}
 			WeaponDefs[wName].customparams.nuclear = 1
 			WeaponDefs[wName].damage = WeaponDefs[wName].damage or {}
-			WeaponDefs[wName].damage.default = 15000
-			WeaponDefs[wName].damage.vtol = 15000
+			WeaponDefs[wName].damage.default = 11000
+			WeaponDefs[wName].damage.vtol = 11000
 			WeaponDefs[wName].flighttime = 10
 		end
 	end
