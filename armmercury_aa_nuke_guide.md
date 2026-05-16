@@ -1,53 +1,65 @@
-# Hướng dẫn biến `armmercury` thành Tháp phòng không Nuke bay thẳng
+# Hướng dẫn biến `armmercury` thành Tháp phòng không Nuke Bám Đuổi (Homing Nuke)
 
-Theo yêu cầu của bạn, chúng ta sẽ làm cho `armmercury` bắn ra tên lửa hạt nhân (nuke), nhưng **chỉ bắn các mục tiêu trên không (VTOL)** và tên lửa **phải bay thẳng**, không bay ngoằn ngoèo bám đuổi mục tiêu.
+Theo yêu cầu mới của bạn, chúng ta sẽ nâng cấp `armmercury` thành một tháp phòng không Nuke cực kỳ nguy hiểm. Nó không chỉ bắn nuke vào các mục tiêu trên không (VTOL) mà đạn giờ đây **có thể bám đuổi (homing)** mục tiêu.
 
-## Cách tiếp cận
+Đi kèm với sức mạnh này, **bán kính nổ được tăng lên**, **thời gian nạp đạn lâu hơn**, và **giá tiền/thời gian xây dựng tháp cũng đắt đỏ hơn**.
 
-Do `armmercury` vốn đã được thiết lập để chỉ bắn mục tiêu trên không (thuộc tính `onlytargetcategory = "VTOL"` trong bảng `weapons` và `canattackground = false` trong `weapondefs`), ta không cần gỡ bỏ các hạn chế này.
+## Các thay đổi chính
 
-Thay vào đó, ta sẽ sử dụng một script mutator (tweakdef) để thay đổi trực tiếp vũ khí `arm_advsam` của nó khi nạp game. Script này sẽ thực hiện 2 việc chính:
-1. **Làm đạn bay thẳng:** Tắt hoàn toàn khả năng ngoặt (`tracks = false`, `turnrate = 0`). Vũ khí sẽ bắn ra hướng mục tiêu ở thời điểm khai hỏa và bay thẳng tuột.
-2. **Cài đặt sát thương Nuke:** Gắn bán kính nổ khổng lồ (`areaofeffect = 1280`), đổi hiệu ứng nổ thành `custom:newnuke`, và đặt sát thương cực cao cho `vtol` (máy bay) lên mức `9500`.
-
-_Lưu ý: Vì đạn bay thẳng và không đuổi, nó rất dễ trượt nếu máy bay di chuyển ngang. Tuy nhiên, nhờ bán kính nổ Nuke cực lớn (1280), chỉ cần đạn nổ ở gần là máy bay sẽ bị tiêu diệt._
+1. **Khả năng bám đuổi:** Bật lại `tracks = true` và `turnrate = 99000`. Tên lửa sẽ ngoặt liên tục để đuổi theo máy bay.
+2. **Sát thương và Bán kính nổ:** Tăng bán kính nổ (`areaofeffect`) lên `2000` (lớn hơn nuke tiêu chuẩn là 1280) và sát thương lên `15000` để đảm bảo quét sạch mọi thứ trên trời.
+3. **Giới hạn tốc độ bắn:** Vì quá mạnh, thời gian nạp đạn (`reloadtime`) bị tăng lên `20` giây (thay vì 1.8 giây như cũ).
+4. **Tăng giá thành xây dựng:**
+   - **Metal:** 6500 (gốc: 1600)
+   - **Energy:** 90000 (gốc: 33000)
+   - **Build time:** 150000 (gốc: 28000)
 
 ## Code Mutator
 
-Tôi đã tạo sẵn một file tên là `armmercury_aa_nuke.lua`. Đây là script dùng để cài làm mod (tweakdef). Nội dung script như sau:
+Tôi đã cập nhật file `armmercury_aa_nuke.lua`. Đây là script dùng để cài làm mod (tweakdef). Nội dung script như sau:
 
 ```lua
 -- Author: Jules
--- Name: ArmMercury AA Straight Nuke
+-- Name: ArmMercury AA Homing Nuke
 
+-- Chỉnh sửa UnitDefs (Giá thành và thời gian xây dựng)
+if UnitDefs and UnitDefs["armmercury"] then
+	UnitDefs["armmercury"].buildtime = 150000 -- Tăng mạnh thời gian xây (gốc: 28000)
+	UnitDefs["armmercury"].metalcost = 6500  -- Tăng kim loại (gốc: 1600)
+	UnitDefs["armmercury"].energycost = 90000 -- Tăng năng lượng (gốc: 33000)
+end
+
+-- Chỉnh sửa WeaponDefs (Cơ chế đạn)
 if WeaponDefs and WeaponDefs["arm_advsam"] then
-	-- Tắt khả năng bám đuổi để đạn bay thẳng
-	WeaponDefs["arm_advsam"].tracks = false
-	WeaponDefs["arm_advsam"].turnrate = 0
-	WeaponDefs["arm_advsam"].trajectoryheight = 0
+	-- Bật lại khả năng bám đuổi (Homing)
+	WeaponDefs["arm_advsam"].tracks = true
+	WeaponDefs["arm_advsam"].turnrate = 99000
+	WeaponDefs["arm_advsam"].trajectoryheight = 0.55
 
-	-- Tăng thời gian bay để đạn bay được xa hơn (vì không đuổi)
-	WeaponDefs["arm_advsam"].flighttime = 10
+	-- Tăng thời gian nạp đạn (Reload time)
+	WeaponDefs["arm_advsam"].reloadtime = 20 -- Bắn chậm hơn nhiều (gốc: 1.8)
 
-	-- Thiết lập hiệu ứng và thông số Nuke
-	WeaponDefs["arm_advsam"].areaofeffect = 1280
-	WeaponDefs["arm_advsam"].craterareaofeffect = 1280
+	-- Tăng bán kính nổ Nuke khổng lồ
+	WeaponDefs["arm_advsam"].areaofeffect = 2000 -- Rất lớn (chuẩn nuke thường là 1280)
+	WeaponDefs["arm_advsam"].craterareaofeffect = 2000
+
 	WeaponDefs["arm_advsam"].explosiongenerator = "custom:newnuke"
 	WeaponDefs["arm_advsam"].soundhit = "nukearm"
 	WeaponDefs["arm_advsam"].soundstart = "nukelaunch"
 
-	-- Đặt biến custom param là nuke
+	-- Cấu hình sát thương và các tham số khác
 	WeaponDefs["arm_advsam"].customparams = WeaponDefs["arm_advsam"].customparams or {}
 	WeaponDefs["arm_advsam"].customparams.nuclear = 1
 
-	-- Thiết lập sát thương cực mạnh đối phó với cả không quân
 	WeaponDefs["arm_advsam"].damage = WeaponDefs["arm_advsam"].damage or {}
-	WeaponDefs["arm_advsam"].damage.default = 9500
-	WeaponDefs["arm_advsam"].damage.vtol = 9500
+	WeaponDefs["arm_advsam"].damage.default = 15000
+	WeaponDefs["arm_advsam"].damage.vtol = 15000
+
+	WeaponDefs["arm_advsam"].flighttime = 10
 end
 ```
 
 ## Cách sử dụng
 
 * Đặt đoạn mã trên vào hệ thống tải mutator/tweakdef của bạn (thường sẽ được chạy tự động trong `gamedata/alldefs_post.lua` thông qua hàm `loadstring`, hoặc load riêng như một mod).
-* Nó sẽ ghi đè các thông số của vũ khí `arm_advsam` trên toàn hệ thống. Kể từ lúc đó, `armmercury` sẽ hoạt động như một tháp bắn Nuke thẳng phòng không.
+* Nó sẽ ghi đè các thông số của tháp `armmercury` và vũ khí `arm_advsam` của nó trên toàn hệ thống. Kể từ lúc đó, nó sẽ là một tháp nuke phòng không bám đuổi đắt tiền và chết chóc.
