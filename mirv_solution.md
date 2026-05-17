@@ -12,18 +12,17 @@ Trong hệ thống Spring Engine hiện tại, **không có thông số mặc đ
 - `flighttime` cố định sẽ khiến đạn nổ sớm ở mục tiêu xa, hoặc chạm đất ở mục tiêu gần.
 - Cơ chế `cluster` là giải pháp an toàn và hoàn hảo nhất cho Nuke. Nó bắt buộc đạn phải đâm xuống đất (hoặc đập vào khiên năng lượng) rồi mới văng đạn con ra rải thảm. Nhưng bù lại, nó luôn luôn nổ chính xác ở mọi khoảng cách.
 
-Dưới đây là đoạn code **hoàn thiện và đẹp nhất** để nuke tản ra diện rộng khi đâm trúng mục tiêu (Bao gồm cả phe ARM, CORE và LEGION):
+Dưới đây là đoạn code **hoàn thiện, sạch và tối ưu nhất** để nuke tản ra diện rộng khi đâm trúng mục tiêu:
 
 ```lua
--- Mod tác giả: [Tên của bạn]
--- Tên mod: Nuke MIRV Cluster Modifier
+-- Mod author: [Your Name]
+-- Mod name: Nuke MIRV Cluster Modifier
 
 local function addMIRVToSilo(unitName, weaponName)
     if UnitDefs[unitName] and UnitDefs[unitName].weapondefs and UnitDefs[unitName].weapondefs[weaponName] then
         local wdefs = UnitDefs[unitName].weapondefs
         local motherNuke = wdefs[weaponName]
 
-        -- 1. Sao chép thông số (manual copy)
         local childNuke = {}
         for k, v in pairs(motherNuke) do
             if type(v) == "table" then
@@ -34,49 +33,33 @@ local function addMIRVToSilo(unitName, weaponName)
             end
         end
 
-        -- Khai báo tên đạn con
         local childName = weaponName .. "_mirv_child"
         childNuke.name = (childNuke.name or "Nuke") .. " (MIRV Child)"
 
-        -- Xóa cluster_def hoặc speceffect ở đạn con để tránh lặp vô hạn
         if childNuke.customparams then
             childNuke.customparams.speceffect = nil
             childNuke.customparams.cluster_def = nil
         end
 
-        -- Đạn con văng ra dưới dạng Cannon để tạo parabol đẹp mắt
         childNuke.weapontype = "Cannon"
-
-        -- Lực văng siêu mạnh để đầu đạn tản ra diện rộng
         childNuke.range = 1500
 
-        -- Chia sát thương làm 6
         if childNuke.damage then
             for k, v in pairs(childNuke.damage) do
                 childNuke.damage[k] = math.floor(v / 6)
             end
         end
 
-        -- Đưa đạn con vào danh sách weapondefs của Unit
         wdefs[childName] = childNuke
 
-        -- 2. Đạn mẹ sử dụng Cluster
         motherNuke.customparams = motherNuke.customparams or {}
-        motherNuke.customparams.speceffect = nil -- Xóa split
-
-        -- LƯU Ý: Tuyệt đối KHÔNG nối `unitName .. "_"` vào đây, vì engine
-        -- trong `alldefs_post.lua` sẽ TỰ ĐỘNG làm việc đó.
+        motherNuke.customparams.speceffect = nil
         motherNuke.customparams.cluster_def = childName
         motherNuke.customparams.cluster_number = 6
     end
 end
 
--- Kích hoạt MIRV cho Silo phe CORE
 addMIRVToSilo("corsilo", "crblmssl")
-
--- Kích hoạt MIRV cho Silo phe ARM
 addMIRVToSilo("armsilo", "nuclear_missile")
-
--- Kích hoạt MIRV cho Silo phe LEGION
 addMIRVToSilo("legsilo", "legicbm")
 ```
