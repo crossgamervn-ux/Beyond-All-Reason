@@ -15,16 +15,16 @@ if UnitDefs then
 			wDef.turnrate = 99000
 			wDef.trajectoryheight = 0.55
 			wDef.reloadtime = 20
-			wDef.areaofeffect = 1400
-			wDef.craterareaofeffect = 1400
+			wDef.areaofeffect = 500
+			wDef.craterareaofeffect = 500
 			wDef.explosiongenerator = "custom:newnuke"
 			wDef.soundhit = "nukearm"
 			wDef.soundstart = "nukelaunch"
 			wDef.customparams = wDef.customparams or {}
 			wDef.customparams.nuclear = 1
 			wDef.damage = wDef.damage or {}
-			wDef.damage.default = 10000
-			wDef.damage.vtol = 10000
+			wDef.damage.default = 0
+			wDef.damage.vtol = 8000
 			wDef.flighttime = 15
 			wDef.range = 3600
 		end
@@ -42,16 +42,16 @@ if UnitDefs then
 			wDef.turnrate = 99000
 			wDef.trajectoryheight = 0.55
 			wDef.reloadtime = 20
-			wDef.areaofeffect = 1400
-			wDef.craterareaofeffect = 1400
+			wDef.areaofeffect = 500
+			wDef.craterareaofeffect = 500
 			wDef.explosiongenerator = "custom:newnuke"
 			wDef.soundhit = "nukearm"
 			wDef.soundstart = "nukelaunch"
 			wDef.customparams = wDef.customparams or {}
 			wDef.customparams.nuclear = 1
 			wDef.damage = wDef.damage or {}
-			wDef.damage.default = 10000
-			wDef.damage.vtol = 10000
+			wDef.damage.default = 0
+			wDef.damage.vtol = 8000
 			wDef.flighttime = 15
 			wDef.range = 3600
 		end
@@ -68,16 +68,16 @@ if WeaponDefs then
 			WeaponDefs[wName].turnrate = 99000
 			WeaponDefs[wName].trajectoryheight = 0.55
 			WeaponDefs[wName].reloadtime = 20
-			WeaponDefs[wName].areaofeffect = 1400
-			WeaponDefs[wName].craterareaofeffect = 1400
+			WeaponDefs[wName].areaofeffect = 500
+			WeaponDefs[wName].craterareaofeffect = 500
 			WeaponDefs[wName].explosiongenerator = "custom:newnuke"
 			WeaponDefs[wName].soundhit = "nukearm"
 			WeaponDefs[wName].soundstart = "nukelaunch"
 			WeaponDefs[wName].customparams = WeaponDefs[wName].customparams or {}
 			WeaponDefs[wName].customparams.nuclear = 1
 			WeaponDefs[wName].damage = WeaponDefs[wName].damage or {}
-			WeaponDefs[wName].damage.default = 10000
-			WeaponDefs[wName].damage.vtol = 10000
+			WeaponDefs[wName].damage.default = 0
+			WeaponDefs[wName].damage.vtol = 8000
 			WeaponDefs[wName].flighttime = 15
 			WeaponDefs[wName].range = 3600
 		end

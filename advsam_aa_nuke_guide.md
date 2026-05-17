@@ -8,7 +8,7 @@ Theo yêu cầu mới của bạn, chúng ta sẽ mở rộng bản mod để ba
 ## Các thay đổi chính (áp dụng cho cả `armmercury` và `corscreamer`)
 
 1. **Khả năng bám đuổi:** Bật lại `tracks = true` và `turnrate = 99000`. Tên lửa sẽ ngoặt liên tục để đuổi theo máy bay.
-2. **Sát thương và Bán kính nổ:** Dù đã bị giảm nhẹ để cân bằng, bán kính nổ (`areaofeffect`) vẫn ở mức `1400` (lớn hơn nuke tiêu chuẩn là 1280) và sát thương là `10000`, quá đủ để hủy diệt các phi đội lớn.
+2. **Sát thương và Bán kính nổ:** Bán kính nổ (`areaofeffect`) được thu hẹp xuống `500` và sát thương mặt đất (`default`) chỉnh về `0` để tránh sát thương nổ lan xuống quân mặt đất. Sát thương máy bay (`vtol`) là `8000`, vẫn là OP để hủy diệt phi đội trên không.
 3. **Giới hạn tốc độ bắn:** Vì quá mạnh, thời gian nạp đạn (`reloadtime`) bị tăng lên `20` giây (thay vì 1.8 giây như cũ).
 4. **Tầm bắn (Range):** Tầm bắn được nhân lên 1.5 lần, đạt mức `3600` (gốc là 2400). Thời gian bay của tên lửa cũng được tăng lên để đảm bảo trúng đích từ xa.
 5. **Tăng giá thành xây dựng:**
@@ -38,16 +38,16 @@ if UnitDefs then
 			wDef.turnrate = 99000
 			wDef.trajectoryheight = 0.55
 			wDef.reloadtime = 20
-			wDef.areaofeffect = 1400
-			wDef.craterareaofeffect = 1400
+			wDef.areaofeffect = 500
+			wDef.craterareaofeffect = 500
 			wDef.explosiongenerator = "custom:newnuke"
 			wDef.soundhit = "nukearm"
 			wDef.soundstart = "nukelaunch"
 			wDef.customparams = wDef.customparams or {}
 			wDef.customparams.nuclear = 1
 			wDef.damage = wDef.damage or {}
-			wDef.damage.default = 10000
-			wDef.damage.vtol = 10000
+			wDef.damage.default = 0
+			wDef.damage.vtol = 8000
 			wDef.flighttime = 15
 			wDef.range = 3600
 		end
@@ -65,16 +65,16 @@ if UnitDefs then
 			wDef.turnrate = 99000
 			wDef.trajectoryheight = 0.55
 			wDef.reloadtime = 20
-			wDef.areaofeffect = 1400
-			wDef.craterareaofeffect = 1400
+			wDef.areaofeffect = 500
+			wDef.craterareaofeffect = 500
 			wDef.explosiongenerator = "custom:newnuke"
 			wDef.soundhit = "nukearm"
 			wDef.soundstart = "nukelaunch"
 			wDef.customparams = wDef.customparams or {}
 			wDef.customparams.nuclear = 1
 			wDef.damage = wDef.damage or {}
-			wDef.damage.default = 10000
-			wDef.damage.vtol = 10000
+			wDef.damage.default = 0
+			wDef.damage.vtol = 8000
 			wDef.flighttime = 15
 			wDef.range = 3600
 		end
@@ -91,16 +91,16 @@ if WeaponDefs then
 			WeaponDefs[wName].turnrate = 99000
 			WeaponDefs[wName].trajectoryheight = 0.55
 			WeaponDefs[wName].reloadtime = 20
-			WeaponDefs[wName].areaofeffect = 1400
-			WeaponDefs[wName].craterareaofeffect = 1400
+			WeaponDefs[wName].areaofeffect = 500
+			WeaponDefs[wName].craterareaofeffect = 500
 			WeaponDefs[wName].explosiongenerator = "custom:newnuke"
 			WeaponDefs[wName].soundhit = "nukearm"
 			WeaponDefs[wName].soundstart = "nukelaunch"
 			WeaponDefs[wName].customparams = WeaponDefs[wName].customparams or {}
 			WeaponDefs[wName].customparams.nuclear = 1
 			WeaponDefs[wName].damage = WeaponDefs[wName].damage or {}
-			WeaponDefs[wName].damage.default = 10000
-			WeaponDefs[wName].damage.vtol = 10000
+			WeaponDefs[wName].damage.default = 0
+			WeaponDefs[wName].damage.vtol = 8000
 			WeaponDefs[wName].flighttime = 15
 			WeaponDefs[wName].range = 3600
 		end
