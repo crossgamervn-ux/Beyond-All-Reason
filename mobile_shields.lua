@@ -1,5 +1,4 @@
--- Mod Author: Jules
--- Mod Name: Mobile Shields
+-- by CrossGamer Portable shield
 if UnitDefs then
     -- Cost variables
     -- Arm (armcroc -> armgate based)
