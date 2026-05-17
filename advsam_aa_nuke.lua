@@ -2,13 +2,11 @@
 -- Name: AdvSAM AA Homing Nuke
 
 if UnitDefs then
-	-- Chỉnh sửa UnitDefs (Giá thành và thời gian xây dựng)
 	if UnitDefs["armmercury"] then
 		UnitDefs["armmercury"].buildtime = 150000
 		UnitDefs["armmercury"].metalcost = 7000
 		UnitDefs["armmercury"].energycost = 100000
 
-		-- Chỉnh sửa trực tiếp weapondefs nằm trong UnitDefs
 		if UnitDefs["armmercury"].weapondefs and UnitDefs["armmercury"].weapondefs["arm_advsam"] then
 			local wDef = UnitDefs["armmercury"].weapondefs["arm_advsam"]
 			wDef.tracks = true
@@ -35,7 +33,6 @@ if UnitDefs then
 		UnitDefs["corscreamer"].metalcost = 7000
 		UnitDefs["corscreamer"].energycost = 100000
 
-		-- Chỉnh sửa trực tiếp weapondefs nằm trong UnitDefs
 		if UnitDefs["corscreamer"].weapondefs and UnitDefs["corscreamer"].weapondefs["cor_advsam"] then
 			local wDef = UnitDefs["corscreamer"].weapondefs["cor_advsam"]
 			wDef.tracks = true
@@ -58,7 +55,6 @@ if UnitDefs then
 	end
 end
 
--- Chỉnh sửa WeaponDefs (Cơ chế đạn) cho an toàn nếu engine tách rời sớm
 if WeaponDefs then
 	local targetWeapons = { "armmercury_arm_advsam", "corscreamer_cor_advsam", "arm_advsam", "cor_advsam" }
 
