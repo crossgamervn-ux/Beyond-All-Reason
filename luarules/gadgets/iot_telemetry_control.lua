@@ -42,9 +42,11 @@ if gadgetHandler:IsSyncedCode() then
 		end
 	end
 
-	function gadget:Initialize()
-		-- Register the incoming message handler
-		gadgetHandler:AddSyncAction("IoT_ControlMsg", handleIoTControlMsg)
+	function gadget:RecvLuaMsg(msg, playerID)
+		if msg:sub(1, 14) == "IoT_ControlMsg" then
+			handleIoTControlMsg(nil, msg:sub(16))
+			return true
+		end
 	end
 
 	function gadget:GameFrame(n)
@@ -121,7 +123,7 @@ else
 				if not data then break end
 
 				-- Send valid data to Synced via explicit action
-				SendToSynced("IoT_ControlMsg", data)
+				Spring.SendLuaRulesMsg("IoT_ControlMsg|" .. data)
 			end
 		end
 	end
