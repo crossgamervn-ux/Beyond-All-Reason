@@ -1,7 +1,7 @@
 function gadget:GetInfo()
 	return {
 		name      = "IoT Telemetry Control",
-		desc      = "Provides UDP telemetry and external unit control via luasocket.",
+		desc      = "Provides file-based telemetry and external unit control using JSON.",
 		author    = "CrossGamer",
 		date      = "2024",
 		license   = "GNU GPL, v2 or later",
@@ -11,6 +11,7 @@ function gadget:GetInfo()
 end
 
 local UPDATE_INTERVAL = 30 -- ~1 second at 30 fps
+local IOT_FILE = "iot_data.txt"
 
 if gadgetHandler:IsSyncedCode() then
 	-- =========================================================================
@@ -53,6 +54,11 @@ if gadgetHandler:IsSyncedCode() then
 		-- Send telemetry data periodically to Unsynced
 		if n % UPDATE_INTERVAL == 0 then
 			local units = Spring.GetAllUnits()
+
+			-- Construct JSON payload directly or pass a formatted string.
+			-- We will build a basic string representation to send over the boundary.
+			local telemetryData = "{"
+			local count = 0
 			for _, unitID in ipairs(units) do
 				if not Spring.GetUnitIsDead(unitID) then
 					local ux, uy, uz = Spring.GetUnitPosition(unitID)
@@ -60,37 +66,58 @@ if gadgetHandler:IsSyncedCode() then
 					local unitDefID = Spring.GetUnitDefID(unitID)
 
 					if ux and hp then
-						local telemetryStr = string.format("%d,%d,%f,%f,%f,%f,%f", unitID, unitDefID, ux, uy, uz, hp, maxHP)
-						SendToUnsynced("IoT_TelemetryMsg", telemetryStr)
+						if count > 0 then telemetryData = telemetryData .. "," end
+						telemetryData = telemetryData .. string.format('"%d": {"def":%d,"x":%f,"y":%f,"z":%f,"hp":%f,"maxHP":%f}', unitID, unitDefID, ux, uy, uz, hp, maxHP)
+						count = count + 1
 					end
 				end
 			end
+			telemetryData = telemetryData .. "}"
+
+			SendToUnsynced("IoT_TelemetryMsg", telemetryData)
 		end
 	end
 
 else
 	-- =========================================================================
-	-- UNSYNCED CODE: Handles Network I/O (luasocket)
+	-- UNSYNCED CODE: Handles File I/O
 	-- =========================================================================
 
-	-- Try standard global first, fallback to require for standard Lua environments.
-	-- Spring's LuaRules engine exposes socket differently depending on config.
-	local socket = socket
-	if not socket then
-		pcall(function() socket = require("socket") end)
-	end
+	local lastProcessedCommandCount = 0
 
-	local udpSend
-	local udpRecv
-
-	local TARGET_IP = "127.0.0.1"
-	local SEND_PORT = 7945
-	local RECV_PORT = 9002
-
-	-- Handlers for SendToUnsynced receive only the arguments explicitly sent, no implicit playerID.
+	-- Write to file, handling the JSON structure
 	local function handleIoTTelemetryMsg(telemetryStr)
-		if udpSend and telemetryStr then
-			udpSend:send(telemetryStr)
+		local f, err = io.open(IOT_FILE, "r")
+		local currentData = {}
+
+		-- Try to read existing data to preserve game_received
+		if f then
+			local content = f:read("*a")
+			f:close()
+			if content and content ~= "" then
+				pcall(function() currentData = Json.decode(content) end)
+			end
+		end
+
+		-- Decode the telemetry string coming from Synced
+		local parsedTelemetry = {}
+		pcall(function() parsedTelemetry = Json.decode(telemetryStr) end)
+
+		-- Update game_send field
+		currentData.game_send = parsedTelemetry
+
+		-- Ensure game_received exists so external app doesn't break
+		if not currentData.game_received then
+			currentData.game_received = {}
+		end
+
+		-- Write back
+		local wf, werr = io.open(IOT_FILE, "w")
+		if wf then
+			wf:write(Json.encode(currentData))
+			wf:close()
+		else
+			Spring.Log("IoT", LOG.ERROR, "Failed to write to " .. IOT_FILE .. ": " .. tostring(werr))
 		end
 	end
 
@@ -98,32 +125,50 @@ else
 		-- Register handler to receive telemetry from Synced
 		gadgetHandler:AddSyncAction("IoT_TelemetryMsg", handleIoTTelemetryMsg)
 
-		if socket then
-			udpSend = socket.udp()
-			if udpSend then
-				udpSend:setpeername(TARGET_IP, SEND_PORT)
-			end
-
-			udpRecv = socket.udp()
-			if udpRecv then
-				udpRecv:setsockname("*", RECV_PORT)
-				udpRecv:settimeout(0)
-			end
-		else
-			Spring.Log("IoT", LOG.ERROR, "Luasocket not found. Ensure TCPAllowConnect is set.")
+		-- Create initial file
+		local f = io.open(IOT_FILE, "w")
+		if f then
+			f:write('{"game_send":{},"game_received":[]}')
+			f:close()
 		end
 	end
 
 	function gadget:GameFrame(n)
-		-- Process incoming network commands
-		if udpRecv then
-			-- Loop to drain the UDP buffer
-			while true do
-				local data, ip, port = udpRecv:receivefrom()
-				if not data then break end
+		-- Periodically check for new commands
+		if n % UPDATE_INTERVAL == 15 then -- Offset from telemetry generation
+			local f, err = io.open(IOT_FILE, "r")
+			if f then
+				local content = f:read("*a")
+				f:close()
 
-				-- Send valid data to Synced via explicit action
-				Spring.SendLuaRulesMsg("IoT_ControlMsg|" .. data)
+				if content and content ~= "" then
+					local success, parsed = pcall(function() return Json.decode(content) end)
+					if success and parsed and parsed.game_received then
+
+						local commands = parsed.game_received
+
+						-- Only process new commands by tracking array length
+						if #commands > lastProcessedCommandCount then
+							for i = lastProcessedCommandCount + 1, #commands do
+								local cmdStr = commands[i]
+								if type(cmdStr) == "string" then
+									Spring.SendLuaRulesMsg("IoT_ControlMsg|" .. cmdStr)
+								end
+							end
+							lastProcessedCommandCount = #commands
+						elseif #commands < lastProcessedCommandCount then
+							-- Array was cleared/reset by external tool
+							lastProcessedCommandCount = 0
+							for i = 1, #commands do
+								local cmdStr = commands[i]
+								if type(cmdStr) == "string" then
+									Spring.SendLuaRulesMsg("IoT_ControlMsg|" .. cmdStr)
+								end
+							end
+							lastProcessedCommandCount = #commands
+						end
+					end
+				end
 			end
 		end
 	end
