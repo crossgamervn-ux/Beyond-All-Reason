@@ -17,31 +17,7 @@ if gadgetHandler:IsSyncedCode() then
 	-- SYNCED CODE: Interacts with game state (orders, units, health)
 	-- =========================================================================
 
-	function gadget:Initialize()
-		-- Register the incoming message handler
-		gadgetHandler:AddSyncAction("IoT_ControlMsg", handleIoTControlMsg)
-	end
-
-	function gadget:GameFrame(n)
-		-- Send telemetry data periodically to Unsynced
-		if n % UPDATE_INTERVAL == 0 then
-			local units = Spring.GetAllUnits()
-			for _, unitID in ipairs(units) do
-				if not Spring.GetUnitIsDead(unitID) then
-					local ux, uy, uz = Spring.GetUnitPosition(unitID)
-					local hp, maxHP = Spring.GetUnitHealth(unitID)
-					local unitDefID = Spring.GetUnitDefID(unitID)
-
-					if ux and hp then
-						local telemetryStr = string.format("%d,%d,%f,%f,%f,%f,%f", unitID, unitDefID, ux, uy, uz, hp, maxHP)
-						SendToUnsynced("IoT_TelemetryMsg", telemetryStr)
-					end
-				end
-			end
-		end
-	end
-
-	function handleIoTControlMsg(_, data)
+	local function handleIoTControlMsg(_, data)
 		local parts = {}
 		for part in string.gmatch(data, "[^,]+") do
 			parts[#parts + 1] = part
@@ -66,6 +42,30 @@ if gadgetHandler:IsSyncedCode() then
 		end
 	end
 
+	function gadget:Initialize()
+		-- Register the incoming message handler
+		gadgetHandler:AddSyncAction("IoT_ControlMsg", handleIoTControlMsg)
+	end
+
+	function gadget:GameFrame(n)
+		-- Send telemetry data periodically to Unsynced
+		if n % UPDATE_INTERVAL == 0 then
+			local units = Spring.GetAllUnits()
+			for _, unitID in ipairs(units) do
+				if not Spring.GetUnitIsDead(unitID) then
+					local ux, uy, uz = Spring.GetUnitPosition(unitID)
+					local hp, maxHP = Spring.GetUnitHealth(unitID)
+					local unitDefID = Spring.GetUnitDefID(unitID)
+
+					if ux and hp then
+						local telemetryStr = string.format("%d,%d,%f,%f,%f,%f,%f", unitID, unitDefID, ux, uy, uz, hp, maxHP)
+						SendToUnsynced("IoT_TelemetryMsg", telemetryStr)
+					end
+				end
+			end
+		end
+	end
+
 else
 	-- =========================================================================
 	-- UNSYNCED CODE: Handles Network I/O (luasocket)
@@ -84,6 +84,13 @@ else
 	local TARGET_IP = "127.0.0.1"
 	local SEND_PORT = 7945
 	local RECV_PORT = 9002
+
+	-- Handlers for SendToUnsynced receive only the arguments explicitly sent, no implicit playerID.
+	local function handleIoTTelemetryMsg(telemetryStr)
+		if udpSend and telemetryStr then
+			udpSend:send(telemetryStr)
+		end
+	end
 
 	function gadget:Initialize()
 		-- Register handler to receive telemetry from Synced
@@ -116,13 +123,6 @@ else
 				-- Send valid data to Synced via explicit action
 				SendToSynced("IoT_ControlMsg", data)
 			end
-		end
-	end
-
-	-- Handlers for SendToUnsynced receive only the arguments explicitly sent, no implicit playerID.
-	function handleIoTTelemetryMsg(telemetryStr)
-		if udpSend and telemetryStr then
-			udpSend:send(telemetryStr)
 		end
 	end
 
