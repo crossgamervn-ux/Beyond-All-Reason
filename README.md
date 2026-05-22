@@ -169,7 +169,7 @@ TCPAllowConnect = *
 *(Warning: This allows Lua scripts to open network connections to any address. Use responsibly in private matches).*
 
 ### Usage
-- The telemetry server automatically broadcasts tracking data to UDP `127.0.0.1:9001` every 30 frames.
+- The telemetry server automatically broadcasts tracking data to UDP `127.0.0.1:7945` every 30 frames.
   - Data Format: `unitID,unitDefID,X,Y,Z,health,maxHealth`
 - The game engine listens for UDP commands on port `9002`.
   - To move a unit: Send string `unitID,MOVE,X,Y,Z` (e.g. `12,MOVE,500,0,500`).

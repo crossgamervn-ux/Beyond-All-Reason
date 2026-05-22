@@ -82,7 +82,7 @@ else
 	local udpRecv
 
 	local TARGET_IP = "127.0.0.1"
-	local SEND_PORT = 9001
+	local SEND_PORT = 7945
 	local RECV_PORT = 9002
 
 	function gadget:Initialize()
