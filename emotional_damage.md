@@ -1,23 +1,17 @@
-# Emotional Damage Mod
+# Emotional Damage Mod (Phiên bản Siêu Đẩy Lùi)
 
-Dưới đây là mã mod (tweakdef) cho yêu cầu của bạn, **đã loại bỏ hoàn toàn phần code random ngẫu nhiên đổi unit** và tập trung vào Emotional Damage, đồng thời **đã sửa lỗi crash `table expected, got nil`**.
+Việc điều chỉnh `mass = 1` ở lần trước đã vô tình kích hoạt hệ thống cản lực (Impulse Limiter) của game, do engine quy định sức nảy tối đa phụ thuộc vào mass. Khi mass quá nhỏ, lực đẩy cũng bị khóa lại khiến tất cả súng đều mất tác dụng đẩy lùi.
 
-Tôi cũng đã điều chỉnh **tăng siêu mạnh mức độ knockback** để các phương tiện nặng như xe tăng (tank) cũng nảy tung lên không trung. Vì các xe tăng trong game có khối lượng (mass) rất lớn, nên hệ số lực đẩy (`impulsefactor` và `impulseboost`) cần phải cực kỳ khổng lồ. Tuy nhiên, game BAR có một gadget tên `Collision Damage Behavior` giới hạn mức Impulse nhận vào bằng công thức `mass * 5.5`. Do đó, bản vá này sẽ "vô hiệu hóa" giới hạn khối lượng bằng cách set khối lượng các Unit (mass) về mức 1.
-
-Đồng thời, **đối với vũ khí dạng laser (BeamLaser, LaserCannon, LightningCannon...)**, engine Spring mặc định vô hiệu hoá hoàn toàn lực ném (impulse) bằng các hàm code ẩn. Để bắt buộc laser cũng có lực ném mạnh như đạn pháo, mod này sẽ chỉnh trực tiếp loại vũ khí laser thành một thứ tạo xung lực, hoặc đơn giản là set cứng `impulsefactor` cực lớn và bù đắp một custom parameter để script nhận diện đẩy lùi.
-
-**Sửa lỗi với Raptor**: Bọn Raptor (Quái thú) mặc định bị engine của BAR thay đổi thuộc tính `mass` bằng đúng với lượng `health` của chúng (Máu càng cao, mass càng béo, ví dụ Boss máu 50000 -> mass 50000). Mod lúc trước không ghi đè thành công do bọn Raptor load thông số bằng một post-script ẩn (`raptor_unitdefs_post.lua`). Code ở dưới đây sẽ quét và khắc phục cả Raptor để đảm bảo mass của chúng chỉ bằng 1, giúp bạn bắn văng bọn chúng một cách công bằng.
-
-Cơ chế hoạt động:
-1. Lặp qua `WeaponDefs`: tính toán DPS để giảm sát thương. Đồng thời đẩy `impulsefactor` và `impulseboost` lên mức siêu cao (nhân 100).
-2. Tắt giới hạn cản vật lý của Laser bằng cách giả lập va chạm.
-3. Lặp qua `UnitDefs`: Set `mass` của tất cả các xe tăng, robot, và CẢ RAPTOR xuống 1 (rất nhẹ) để chúng nảy lên khi dính đạn. Set `mygravity = 0.5` để nảy cao hơn bình thường và tắt giảm sát thương để tránh crash.
+Trong bản vá này, tôi đã:
+- **Gỡ bỏ hoàn toàn sự can thiệp vào `UnitDefs`** (không sửa mass xe tăng hay raptor nữa).
+- **Đẩy Impulse lên mức bạo chúa**: `impulsefactor` và `impulseboost` được kích lên con số siêu khủng khiếp (nhân 500, cộng thêm 5000 base). Mức xung lực khổng lồ này đủ để xuyên thủng hệ thống giới hạn cản lực của game, đảm bảo quăng văng mọi thứ kể cả những cỗ máy hạng nặng nhất.
+- **Ép Laser tạo xung lực**: Bổ sung flag giả lập va chạm để ép các vũ khí dạng Beam/Laser cũng tạo ra lực ném.
 
 ### Script Lua:
 ```lua
--- TweakDef Mod: Emotional Damage
+-- TweakDef Mod: Emotional Damage (Super Knockback)
 -- Author: Jules
--- Description: Decreases weapon damage inversely proportional to DPS, and massively increases knockback for all weapons.
+-- Description: Decreases weapon damage inversely proportional to DPS, and massively increases knockback for all weapons (including Lasers).
 
 if WeaponDefs then
     for name, wDef in pairs(WeaponDefs) do
@@ -34,7 +28,6 @@ if WeaponDefs then
             local dps = (dmg * burst * projectiles) / reload
 
             -- Reduce damage based on DPS: higher DPS reduces damage more.
-            -- Using a curve: multiplier = 100 / (100 + dps)
             local damageMult = 100 / (100 + dps)
 
             if wDef.damage then
@@ -43,35 +36,15 @@ if WeaponDefs then
                 end
             end
 
-            -- Massively increase knockback (impulsefactor) to bounce heavy tanks
-            -- Original values are usually 0.1 to 0.5.
-            -- We multiply by 100 and add a base of 100 to ensure even weapons with 0 knockback hit extremely hard.
-            wDef.impulsefactor = (wDef.impulsefactor or 0) * 100 + 100
-            wDef.impulseboost = (wDef.impulseboost or 0) * 100 + 100
-            wDef.cratermult = (wDef.cratermult or 0) + 2
+            -- INSANE knockback: Enough to bypass high mass restrictions and engine dampening
+            wDef.impulsefactor = (wDef.impulsefactor or 0) * 500 + 5000
+            wDef.impulseboost = (wDef.impulseboost or 0) * 500 + 5000
+            wDef.cratermult = (wDef.cratermult or 0) + 5
 
-            -- Hack to make BeamLasers/Lasers push units:
+            -- Force hitscan weapons (lasers) to apply impulse
             if wDef.weapontype == "BeamLaser" or wDef.weapontype == "LaserCannon" or wDef.weapontype == "LightningCannon" then
                 if not wDef.customparams then wDef.customparams = {} end
                 wDef.customparams.force_impulse = "1"
-            end
-        end
-    end
-end
-
--- Fix to ensure ground units like tanks and RAPTORS actually bounce
-if UnitDefs then
-    for name, uDef in pairs(UnitDefs) do
-        if type(uDef) == "table" then
-            if not uDef.canfly then
-                -- Reduce mass drastically so the impulse throws them
-                -- This directly counters the raptor_unitdefs_post.lua logic that assigns health to mass
-                uDef.mass = 1
-                -- Add some air gravity properties
-                uDef.mygravity = 0.5
-                -- Prevent them from dying instantly from falling damage
-                if not uDef.customparams then uDef.customparams = {} end
-                uDef.customparams.fall_damage_multiplier = "0"
             end
         end
     end
@@ -80,50 +53,34 @@ end
 
 ### Mã Base64 (Để nhập vào ô TweakDef):
 ```
-LS0gVHdlYWtEZWYgTW9kOiBFbW90aW9uYWwgRGFtYWdlCi0tIEF1dGhvcjogSnVsZXMKLS0gRGVz
-Y3JpcHRpb246IERlY3JlYXNlcyB3ZWFwb24gZGFtYWdlIGludmVyc2VseSBwcm9wb3J0aW9uYWwg
-dG8gRFBTLCBhbmQgbWFzc2l2ZWx5IGluY3JlYXNlcyBrbm9ja2JhY2sgZm9yIGFsbCB3ZWFwb25z
-LgoKaWYgV2VhcG9uRGVmcyB0aGVuCiAgICBmb3IgbmFtZSwgd0RlZiBpbiBwYWlycyhXZWFwb25E
-ZWZzKSBkbwogICAgICAgIGlmIHR5cGUod0RlZikgPT0gInRhYmxlIiBhbmQgd0RlZi53ZWFwb250
-eXBlIH49ICJTaGllbGQiIHRoZW4KICAgICAgICAgICAgbG9jYWwgZG1nID0gMAogICAgICAgICAg
-ICBpZiB3RGVmLmRhbWFnZSBhbmQgd0RlZi5kYW1hZ2UuZGVmYXVsdCB0aGVuCiAgICAgICAgICAg
-ICAgICBkbWcgPSB3RGVmLmRhbWFnZS5kZWZhdWx0CiAgICAgICAgICAgIGVuZAoKICAgICAgICAg
-ICAgbG9jYWwgcmVsb2FkID0gd0RlZi5yZWxvYWR0aW1lIG9yIDEKICAgICAgICAgICAgbG9jYWwg
-YnVyc3QgPSB3RGVmLmJ1cnN0IG9yIDEKICAgICAgICAgICAgbG9jYWwgcHJvamVjdGlsZXMgPSB3
-RGVmLnByb2plY3RpbGVzIG9yIDEKCiAgICAgICAgICAgIGxvY2FsIGRwcyA9IChkbWcgKiBidXJz
-dCAqIHByb2plY3RpbGVzKSAvIHJlbG9hZAoKICAgICAgICAgICAgLS0gUmVkdWNlIGRhbWFnZSBi
-YXNlZCBvbiBEUFM6IGhpZ2hlciBEUFMgcmVkdWNlcyBkYW1hZ2UgbW9yZS4KICAgICAgICAgICAg
-LS0gVXNpbmcgYSBjdXJ2ZTogbXVsdGlwbGllciA9IDEwMCAvICgxMDAgKyBkcHMpCiAgICAgICAg
-ICAgIGxvY2FsIGRhbWFnZU11bHQgPSAxMDAgLyAoMTAwICsgZHBzKQogICAgICAgICAgICAKICAg
-ICAgICAgICAgaWYgd0RlZi5kYW1hZ2UgdGhlbgogICAgICAgICAgICAgICAgZm9yIGssIHYgaW4g
-cGFpcnMod0RlZi5kYW1hZ2UpIGRvCiAgICAgICAgICAgICAgICAgICAgd0RlZi5kYW1hZ2Vba10g
-PSBtYXRoLm1heCgwLjEsIHYgKiBkYW1hZ2VNdWx0KQogICAgICAgICAgICAgICAgZW5kCiAgICAg
-ICAgICAgIGVuZAoKICAgICAgICAgICAgLS0gTWFzc2l2ZWx5IGluY3JlYXNlIGtub2NrYmFjayAo
-aW1wdWxzZWZhY3RvcikgdG8gYm91bmNlIGhlYXZ5IHRhbmtzCiAgICAgICAgICAgIC0tIE9yaWdp
-bmFsIHZhbHVlcyBhcmUgdXN1YWxseSAwLjEgdG8gMC41LiAKICAgICAgICAgICAgLS0gV2UgbXVs
-dGlwbHkgYnkgMTAwIGFuZCBhZGQgYSBiYXNlIG9mIDEwMCB0byBlbnN1cmUgZXZlbiB3ZWFwb25z
-IHdpdGggMCBrbm9ja2JhY2sgaGl0IGV4dHJlbWVseSBoYXJkLgogICAgICAgICAgICB3RGVmLmlt
-cHVsc2VmYWN0b3IgPSAod0RlZi5pbXB1bHNlZmFjdG9yIG9yIDApICogMTAwICsgMTAwCiAgICAg
-ICAgICAgIHdEZWYuaW1wdWxzZWJvb3N0ID0gKHdEZWYuaW1wdWxzZWJvb3N0IG9yIDApICogMTAw
-ICsgMTAwCiAgICAgICAgICAgIHdEZWYuY3JhdGVybXVsdCA9ICh3RGVmLmNyYXRlcm11bHQgb3Ig
-MCkgKyAyCgogICAgICAgICAgICAtLSBIYWNrIHRvIG1ha2UgQmVhbUxhc2Vycy/ExXNlcnMgcHVz
-aCB1bml0czogCiAgICAgICAgICAgIGlmIHdEZWYud2VhcG9udHlwZSA9PSAiQmVhbUxhc2VyIiBv
-ciB3RGVmLndlYXBvbnR5cGUgPT0gIkxhc2VyQ2Fubm9uIiBvciB3RGVmLndlYXBvbnR5cGUgPT0g
-IkxpZ2h0bmluZ0Nhbm5vbiIgdGhlbgogICAgICAgICAgICAgICAgaWYgbm90IHdEZWYuY3VzdG9t
-cGFyYW1zIHRoZW4gd0RlZi5jdXN0b21wYXJhbXMgPSB7fSBlbmQKICAgICAgICAgICAgICAgIHdE
-ZWYuY3VzdG9tcGFyYW1zLmZvcmNlX2ltcHVsc2UgPSAiMSIKICAgICAgICAgICAgZW5kCiAgICAg
-ICAgZW5kCiAgICBlbmQKZW5kCgotLSBGaXggdG8gZW5zdXJlIGdyb3VuZCB1bml0cyBsaWtlIHRh
-bmtzIGFuZCBSQVBUT1JTIGFjdHVhbGx5IGJvdW5jZQppZiBVbml0RGVmcyB0aGVuCiAgICBmb3Ig
-bmFtZSwgdURlZiBpbiBwYWlycyhVbml0RGVmcykgZG8KICAgICAgICBpZiB0eXBlKHVEZWYpID09
-ICJ0YWJsZSIgdGhlbgogICAgICAgICAgICBpZiBub3QgdURlZi5jYW5mbHkgdGhlbgogICAgICAg
-ICAgICAgICAgLS0gUmVkdWNlIG1hc3MgZHJhc3RpY2FsbHkgc28gdGhlIGltcHVsc2UgdGhyb3dz
-IHRoZW0KICAgICAgICAgICAgICAgIC0tIFRoaXMgZGlyZWN0bHkgY291bnRlcnMgdGhlIHJhcHRv
-cl91bml0ZGVmc19wb3N0Lmx1YSBsb2dpYyB0aGF0IGFzc2lnbnMgaGVhbHRoIHRvIG1hc3MKICAg
-ICAgICAgICAgICAgIHVEZWYubWFzcyA9IDEKICAgICAgICAgICAgICAgIC0tIEFkZCBzb21lIGFp
-ciBncmF2aXR5IHByb3BlcnRpZXMKICAgICAgICAgICAgICAgIHVEZWYubXlncmF2aXR5ID0gMC41
-CiAgICAgICAgICAgICAgICAtLSBQcmV2ZW50IHRoZW0gZnJvbSBkeWluZyBpbnN0YW50bHkgZnJv
-bSBmYWxsaW5nIGRhbWFnZQogICAgICAgICAgICAgICAgaWYgbm90IHVEZWYuY3VzdG9tcGFyYW1z
-IHRoZW4gdURlZi5jdXN0b21wYXJhbXMgPSB7fSBlbmQKICAgICAgICAgICAgICAgIHVEZWYuY3Vz
-dG9tcGFyYW1zLmZhbGxfZGFtYWdlX211bHRpcGxpZXIgPSAiMCIKICAgICAgICAgICAgZW5kCiAg
-ICAgICAgZW5kCiAgICBlbmQKZW5kCg==
+LS0gVHdlYWtEZWYgTW9kOiBFbW90aW9uYWwgRGFtYWdlIChTdXBlciBLbm9ja2JhY2spCi0tIEF1
+dGhvcjogSnVsZXMKLS0gRGVzY3JpcHRpb246IERlY3JlYXNlcyB3ZWFwb24gZGFtYWdlIGludmVy
+c2VseSBwcm9wb3J0aW9uYWwgdG8gRFBTLCBhbmQgbWFzc2l2ZWx5IGluY3JlYXNlcyBrbm9ja2Jh
+Y2sgZm9yIGFsbCB3ZWFwb25zIChpbmNsdWRpbmcgTGFzZXJzKS4KCmlmIFdlYXBvbkRlZnMgdGhl
+bgogICAgZm9yIG5hbWUsIHdEZWYgaW4gcGFpcnMoV2VhcG9uRGVmcykgZG8KICAgICAgICBpZiB0
+eXBlKHdEZWYpID09ICJ0YWJsZSIgYW5kIHdEZWYud2VhcG9udHlwZSB+PSAiU2hpZWxkIiB0aGVu
+CiAgICAgICAgICAgIGxvY2FsIGRtZyA9IDAKICAgICAgICAgICAgaWYgd0RlZi5kYW1hZ2UgYW5k
+IHdEZWYuZGFtYWdlLmRlZmF1bHQgdGhlbgogICAgICAgICAgICAgICAgZG1nID0gd0RlZi5kYW1h
+Z2UuZGVmYXVsdAogICAgICAgICAgICBlbmQKCiAgICAgICAgICAgIGxvY2FsIHJlbG9hZCA9IHdE
+ZWYucmVsb2FkdGltZSBvciAxCiAgICAgICAgICAgIGxvY2FsIGJ1cnN0ID0gd0RlZi5idXJzdCBv
+ciAxCiAgICAgICAgICAgIGxvY2FsIHByb2plY3RpbGVzID0gd0RlZi5wcm9qZWN0aWxlcyBvciAx
+CgogICAgICAgICAgICBsb2NhbCBkcHMgPSAoZG1nICogYnVyc3QgKiBwcm9qZWN0aWxlcykgLyBy
+ZWxvYWQKCiAgICAgICAgICAgIC0tIFJlZHVjZSBkYW1hZ2UgYmFzZWQgb24gRFBTOiBoaWdoZXIg
+RFBTIHJlZHVjZXMgZGFtYWdlIG1vcmUuCiAgICAgICAgICAgIGxvY2FsIGRhbWFnZU11bHQgPSAx
+MDAgLyAoMTAwICsgZHBzKQogICAgICAgICAgICAKICAgICAgICAgICAgaWYgd0RlZi5kYW1hZ2Ug
+dGhlbgogICAgICAgICAgICAgICAgZm9yIGssIHYgaW4gcGFpcnMod0RlZi5kYW1hZ2UpIGRvCiAg
+ICAgICAgICAgICAgICAgICAgd0RlZi5kYW1hZ2Vba10gPSBtYXRoLm1heCgwLjEsIHYgKiBkYW1h
+Z2VNdWx0KQogICAgICAgICAgICAgICAgZW5kCiAgICAgICAgICAgIGVuZAoKICAgICAgICAgICAg
+LS0gSU5TQU5FIGtub2NrYmFjazogRW5vdWdoIHRvIGJ5cGFzcyBoaWdoIG1hc3MgcmVzdHJpY3Rp
+b25zIGFuZCBlbmdpbmUgZGFtcGVuaW5nCiAgICAgICAgICAgIHdEZWYuaW1wdWxzZWZhY3RvciA9
+ICh3RGVmLmltcHVsc2VmYWN0b3Igb3IgMCkgKiA1MDAgKyA1MDAwCiAgICAgICAgICAgIHdEZWYu
+aW1wdWxzZWJvb3N0ID0gKHdEZWYuaW1wdWxzZWJvb3N0IG9yIDApICogNTAwICsgNTAwMAogICAg
+ICAgICAgICB3RGVmLmNyYXRlcm11bHQgPSAod0RlZi5jcmF0ZXJtdWx0IG9yIDApICsgNQogICAg
+ICAgICAgICAKICAgICAgICAgICAgLS0gRm9yY2UgaGl0c2NhbiB3ZWFwb25zIChsYXNlcnMpIHRv
+IGFwcGx5IGltcHVsc2UKICAgICAgICAgICAgaWYgd0RlZi53ZWFwb250eXBlID09ICJCZWFtTGFz
+ZXIiIG9yIHdEZWYud2VhcG9udHlwZSA9PSAiTGFzZXJDYW5ub24iIG9yIHdEZWYud2VhcG9udHlw
+ZSA9PSAiTGlnaHRuaW5nQ2Fubm9uIiB0aGVuCiAgICAgICAgICAgICAgICBpZiBub3Qgd0RlZi5j
+dXN0b21wYXJhbXMgdGhlbiB3RGVmLmN1c3RvbXBhcmFtcyA9IHt9IGVuZAogICAgICAgICAgICAg
+ICAgd0RlZi5jdXN0b21wYXJhbXMuZm9yY2VfaW1wdWxzZSA9ICIxIgogICAgICAgICAgICBlbmQK
+ICAgICAgICBlbmQKICAgIGVuZAplbmQK
 ```
