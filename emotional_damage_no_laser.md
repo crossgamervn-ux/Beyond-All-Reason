@@ -3,8 +3,8 @@
 Đây là phiên bản bạn yêu cầu, trước khi tôi đưa vào các xử lý ép force cho Laser.
 Bản này giữ nguyên các tính năng:
 - **Giảm sát thương theo DPS**.
-- Tăng `impulsefactor` và `impulseboost` lên x100 để knockback cực mạnh.
-- Giảm `mass = 1` cho tất cả các đơn vị mặt đất để vượt qua rào cản cản lực văng của Engine.
+- Tăng `impulsefactor` và `impulseboost` lên mức siêu cao (x100 + 100) để knockback cực mạnh.
+- Giảm `mass = 1` cho tất cả các đơn vị mặt đất (**bao gồm cả Xe Tăng và RAPTOR** vốn bị engine tự gán mass bằng đúng lượng máu) để vượt qua rào cản cản lực văng của Engine.
 - Tắt tính năng nhận sát thương khi rớt từ trên cao xuống (`fall_damage_multiplier = "0"`).
 
 ### Script Lua:
@@ -27,6 +27,8 @@ if WeaponDefs then
 
             local dps = (dmg * burst * projectiles) / reload
 
+            -- Reduce damage based on DPS: higher DPS reduces damage more.
+            -- Using a curve: multiplier = 100 / (100 + dps)
             local damageMult = 100 / (100 + dps)
 
             if wDef.damage then
@@ -35,19 +37,27 @@ if WeaponDefs then
                 end
             end
 
-            wDef.impulsefactor = (wDef.impulsefactor or 0) * 100 + 50
-            wDef.impulseboost = (wDef.impulseboost or 0) * 100 + 50
+            -- Massively increase knockback (impulsefactor) to bounce heavy tanks
+            -- Original values are usually 0.1 to 0.5.
+            -- We multiply by 100 and add a base of 100 to ensure even weapons with 0 knockback hit extremely hard.
+            wDef.impulsefactor = (wDef.impulsefactor or 0) * 100 + 100
+            wDef.impulseboost = (wDef.impulseboost or 0) * 100 + 100
             wDef.cratermult = (wDef.cratermult or 0) + 2
         end
     end
 end
 
+-- Fix to ensure ground units like tanks and RAPTORS actually bounce
 if UnitDefs then
     for name, uDef in pairs(UnitDefs) do
         if type(uDef) == "table" then
             if not uDef.canfly then
+                -- Reduce mass drastically so the impulse throws them
+                -- This directly counters the raptor_unitdefs_post.lua logic that assigns health to mass
                 uDef.mass = 1
+                -- Add some air gravity properties
                 uDef.mygravity = 0.5
+                -- Prevent them from dying instantly from falling damage
                 if not uDef.customparams then uDef.customparams = {} end
                 uDef.customparams.fall_damage_multiplier = "0"
             end
@@ -58,31 +68,28 @@ end
 
 ### Mã Base64 (Để nhập vào ô TweakDef):
 ```
-LS0gVHdlYWtEZWYgTW9kOiBFbW90aW9uYWwgRGFtYWdlCi0tIEF1dGhvcjogSnVsZXMKLS0gRGVz
-Y3JpcHRpb246IERlY3JlYXNlcyB3ZWFwb24gZGFtYWdlIGludmVyc2VseSBwcm9wb3J0aW9uYWwg
-dG8gRFBTLCBhbmQgbWFzc2l2ZWx5IGluY3JlYXNlcyBrbm9ja2JhY2sgZm9yIGFsbCB3ZWFwb25z
-LgoKaWYgV2VhcG9uRGVmcyB0aGVuCiAgICBmb3IgbmFtZSwgd0RlZiBpbiBwYWlycyhXZWFwb25E
-ZWZzKSBkbwogICAgICAgIGlmIHR5cGUod0RlZikgPT0gInRhYmxlIiBhbmQgd0RlZi53ZWFwb250
-eXBlIH49ICJTaGllbGQiIHRoZW4KICAgICAgICAgICAgbG9jYWwgZG1nID0gMAogICAgICAgICAg
-ICBpZiB3RGVmLmRhbWFnZSBhbmQgd0RlZi5kYW1hZ2UuZGVmYXVsdCB0aGVuCiAgICAgICAgICAg
-ICAgICBkbWcgPSB3RGVmLmRhbWFnZS5kZWZhdWx0CiAgICAgICAgICAgIGVuZAoKICAgICAgICAg
-ICAgbG9jYWwgcmVsb2FkID0gd0RlZi5yZWxvYWR0aW1lIG9yIDEKICAgICAgICAgICAgbG9jYWwg
-YnVyc3QgPSB3RGVmLmJ1cnN0IG9yIDEKICAgICAgICAgICAgbG9jYWwgcHJvamVjdGlsZXMgPSB3
-RGVmLnByb2plY3RpbGVzIG9yIDEKCiAgICAgICAgICAgIGxvY2FsIGRwcyA9IChkbWcgKiBidXJz
-dCAqIHByb2plY3RpbGVzKSAvIHJlbG9hZAoKICAgICAgICAgICAgbG9jYWwgZGFtYWdlTXVsdCA9
-IDEwMCAvICgxMDAgKyBkcHMpCiAgICAgICAgICAgIAogICAgICAgICAgICBpZiB3RGVmLmRhbWFn
-ZSB0aGVuCiAgICAgICAgICAgICAgICBmb3IgaywgdiBpbiBwYWlycyh3RGVmLmRhbWFnZSkgZG8K
-ICAgICAgICAgICAgICAgICAgICB3RGVmLmRhbWFnZVtrXSA9IG1hdGgubWF4KDAuMSwgdiAqIGRh
-bWFnZU11bHQpCiAgICAgICAgICAgICAgICBlbmQKICAgICAgICAgICAgZW5kCgogICAgICAgICAg
-ICB3RGVmLmltcHVsc2VmYWN0b3IgPSAod0RlZi5pbXB1bHNlZmFjdG9yIG9yIDApICogMTAwICsg
-NTAKICAgICAgICAgICAgd0RlZi5pbXB1bHNlYm9vc3QgPSAod0RlZi5pbXB1bHNlYm9vc3Qgb3Ig
-MCkgKiAxMDAgKyA1MAogICAgICAgICAgICB3RGVmLmNyYXRlcm11bHQgPSAod0RlZi5jcmF0ZXJt
-dWx0IG9yIDApICsgMgogICAgICAgIGVuZAogICAgZW5kCmVuZAoKaWYgVW5pdERlZnMgdGhlbgog
-ICAgZm9yIG5hbWUsIHVEZWYgaW4gcGFpcnMoVW5pdERlZnMpIGRvCiAgICAgICAgaWYgdHlwZSh1
-RGVmKSA9PSAidGFibGUiIHRoZW4KICAgICAgICAgICAgaWYgbm90IHVEZWYuY2FuZmx5IHRoZW4K
-ICAgICAgICAgICAgICAgIHVEZWYubWFzcyA9IDEKICAgICAgICAgICAgICAgIHVEZWYubXlncmF2
-aXR5ID0gMC41CiAgICAgICAgICAgICAgICBpZiBub3QgdURlZi5jdXN0b21wYXJhbXMgdGhlbiB1
-RGVmLmN1c3RvbXBhcmFtcyA9IHt9IGVuZAogICAgICAgICAgICAgICAgdURlZi5jdXN0b21wYXJh
-bXMuZmFsbF9kYW1hZ2VfbXVsdGlwbGllciA9ICIwIgogICAgICAgICAgICBlbmQKICAgICAgICBl
-bmQKICAgIGVuZAplbmQK
+aWYgV2VhcG9uRGVmcyB0aGVuCiAgICBmb3IgbmFtZSwgd0RlZiBpbiBwYWlycyhXZWFwb25EZWZz
+KSBkbwogICAgICAgIGlmIHR5cGUod0RlZikgPT0gInRhYmxlIiBhbmQgd0RlZi53ZWFwb250eXBl
+IH49ICJTaGllbGQiIHRoZW4KICAgICAgICAgICAgbG9jYWwgZG1nID0gMAogICAgICAgICAgICBp
+ZiB3RGVmLmRhbWFnZSBhbmQgd0RlZi5kYW1hZ2UuZGVmYXVsdCB0aGVuCiAgICAgICAgICAgICAg
+ICBkbWcgPSB3RGVmLmRhbWFnZS5kZWZhdWx0CiAgICAgICAgICAgIGVuZAoKICAgICAgICAgICAg
+bG9jYWwgcmVsb2FkID0gd0RlZi5yZWxvYWR0aW1lIG9yIDEKICAgICAgICAgICAgbG9jYWwgYnVy
+c3QgPSB3RGVmLmJ1cnN0IG9yIDEKICAgICAgICAgICAgbG9jYWwgcHJvamVjdGlsZXMgPSB3RGVm
+LnByb2plY3RpbGVzIG9yIDEKCiAgICAgICAgICAgIGxvY2FsIGRwcyA9IChkbWcgKiBidXJzdCAq
+IHByb2plY3RpbGVzKSAvIHJlbG9hZAoKICAgICAgICAgICAgbG9jYWwgZGFtYWdlTXVsdCA9IDEw
+MCAvICgxMDAgKyBkcHMpCiAgICAgICAgICAgIAogICAgICAgICAgICBpZiB3RGVmLmRhbWFnZSB0
+aGVuCiAgICAgICAgICAgICAgICBmb3IgaywgdiBpbiBwYWlycyh3RGVmLmRhbWFnZSkgZG8KICAg
+ICAgICAgICAgICAgICAgICB3RGVmLmRhbWFnZVtrXSA9IG1hdGgubWF4KDAuMSwgdiAqIGRhbWFn
+ZU11bHQpCiAgICAgICAgICAgICAgICBlbmQKICAgICAgICAgICAgZW5kCgogICAgICAgICAgICB3
+RGVmLmltcHVsc2VmYWN0b3IgPSAod0RlZi5pbXB1bHNlZmFjdG9yIG9yIDApICogMTAwICsgMTAw
+CiAgICAgICAgICAgIHdEZWYuaW1wdWxzZWJvb3N0ID0gKHdEZWYuaW1wdWxzZWJvb3N0IG9yIDAp
+ICogMTAwICsgMTAwCiAgICAgICAgICAgIHdEZWYuY3JhdGVybXVsdCA9ICh3RGVmLmNyYXRlcm11
+bHQgb3IgMCkgKyAyCiAgICAgICAgZW5kCiAgICBlbmQKZW5kCgppZiBVbml0RGVmcyB0aGVuCiAg
+ICBmb3IgbmFtZSwgdURlZiBpbiBwYWlycyhVbml0RGVmcykgZG8KICAgICAgICBpZiB0eXBlKHVE
+ZWYpID09ICJ0YWJsZSIgdGhlbgogICAgICAgICAgICBpZiBub3QgdURlZi5jYW5mbHkgdGhlbgog
+ICAgICAgICAgICAgICAgdURlZi5tYXNzID0gMQogICAgICAgICAgICAgICAgdURlZi5teWdyYXZp
+dHkgPSAwLjUKICAgICAgICAgICAgICAgIGlmIG5vdCB1RGVmLmN1c3RvbXBhcmFtcyB0aGVuIHVE
+ZWYuY3VzdG9tcGFyYW1zID0ge30gZW5kCiAgICAgICAgICAgICAgICB1RGVmLmN1c3RvbXBhcmFt
+cy5mYWxsX2RhbWFnZV9tdWx0aXBsaWVyID0gIjAiCiAgICAgICAgICAgIGVuZAogICAgICAgIGVu
+ZAogICAgZW5kCmVuZAo=
 ```
