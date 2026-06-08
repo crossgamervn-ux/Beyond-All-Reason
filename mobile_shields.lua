@@ -14,7 +14,7 @@ if UnitDefs then
 
     local powerregenenergy = 562.5 * 1.1
 
-    local units_to_modify = {"armcroc", "corsala", "legfloat"}
+    local units_to_modify = {"armcroc", "corsala", "legamphtank"}
     for _, unitName in ipairs(units_to_modify) do
         local ud = UnitDefs[unitName]
         if ud then
@@ -32,7 +32,7 @@ if UnitDefs then
                 ud.metalcost = cor_metal
                 ud.energycost = cor_energy
                 ud.buildtime = cor_buildtime
-            elseif unitName == "legfloat" then
+            elseif unitName == "legamphtank" then
                 ud.buildpic = "LEGDEFLECTOR.DDS"
                 ud.metalcost = leg_metal
                 ud.energycost = leg_energy
