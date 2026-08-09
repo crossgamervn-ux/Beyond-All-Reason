@@ -1,0 +1,27 @@
+return {
+	mirv_nuke_bomblet = {
+		areaofeffect = 600,
+		avoidfeature = false,
+		avoidfriendly = false,
+		cegtag = "NUKETRAIL",
+		craterareaofeffect = 600,
+		craterboost = 1.0,
+		cratermult = 0.5,
+		edgeeffectiveness = 0.45,
+		explosiongenerator = "custom:newnuketac",
+		gravityaffected = true,
+		impulsefactor = 0.5,
+		name = "MIRV Nuclear Bomblet",
+		noselfdamage = true,
+		range = 400,
+		reloadtime = 3.6,
+		soundhit = "xplomed4",
+		soundhitwet = "nukewater",
+		weapontype = "Cannon",
+		weaponvelocity = 400,
+		damage = {
+			commanders = 600,
+			default = 3000,
+		},
+	},
+}
