@@ -151,5 +151,28 @@ Then open **User Settings (JSON)** and add:
         "replacement": "spec/$1/$2_spec.lua"
     }
 ],
+
+---
+
+## IoT Telemetry & Control Setup
+
+An optional IoT telemetry and external control gadget (`luarules/gadgets/iot_telemetry_control.lua`) is included. It allows real-time extraction of unit coordinates and health statuses, as well as external unit control via UDP messages. This allows Beyond All Reason to be integrated with external physical dioramas or AI controllers.
+
+### Prerequisites
+
+To allow the Lua environment to open network sockets, you **must** configure the Spring Engine's security settings.
+Find or create your `springsettings.cfg` file (typically located in the BAR install directory or `/tools/headless_testing/` for dev modes) and add or update the following setting:
+
+```cfg
+TCPAllowConnect = *
+```
+*(Warning: This allows Lua scripts to open network connections to any address. Use responsibly in private matches).*
+
+### Usage
+- The telemetry server automatically broadcasts tracking data to UDP `127.0.0.1:7945` every 30 frames.
+  - Data Format: `unitID,unitDefID,X,Y,Z,health,maxHealth`
+- The game engine listens for UDP commands on port `9002`.
+  - To move a unit: Send string `unitID,MOVE,X,Y,Z` (e.g. `12,MOVE,500,0,500`).
+  - To stop a unit: Send string `unitID,STOP` (e.g. `12,STOP`).
 ```
 
