@@ -51,6 +51,7 @@ local function installBridge()
 			return BAR[key]
 		end
 
+		
 		if ALIASES[key] and Spring[ALIASES[key]] then
 			rawset(t, key, Spring[ALIASES[key]])
 			return Spring[ALIASES[key]]
